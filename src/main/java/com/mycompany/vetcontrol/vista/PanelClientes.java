@@ -14,8 +14,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -31,6 +35,10 @@ public class PanelClientes extends JPanel{
     private static final Color ROJO= new Color(217, 92, 89);
     private static final Color TEXTO_SECUNDARIO= new Color(98, 114, 125);
     private static final Color BORDE= new Color(216, 225, 232);
+    
+    // Tabla de datos
+    private JTable tablaClientes;
+    
     
     public PanelClientes() {
         crearInterfaz();
@@ -70,7 +78,7 @@ public class PanelClientes extends JPanel{
     
     private JPanel crearTarjetaClientes() {
         JPanel tarjeta= new JPanel(new BorderLayout(0, 20));
-        
+        // apariencia y posición de la tarjeta
         tarjeta.setBorder(
             BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(
@@ -78,6 +86,8 @@ public class PanelClientes extends JPanel{
                     new EmptyBorder(20, 32, 28, 32)));
         tarjeta.add(crearSeccionBusqueda(), BorderLayout.NORTH);
         
+        // Agrega la tabla de datos
+        tarjeta.add(crearTablaClientes(), BorderLayout.CENTER);
         return tarjeta;
     }
     
@@ -147,6 +157,53 @@ public class PanelClientes extends JPanel{
         boton.putClientProperty("JButton.buttonType", "borderless");
         
         return boton;
+    }
+    
+    // Panel tabla de datos
+    private JScrollPane crearTablaClientes(){
+        String[] columnas= {"Código", "Nombre completo", "Télefono", "Correo"};
+        
+        // datos de prueba
+        Object[][] datosTemporales= {
+            {"C-001", "Radiohead", "1010-1010", "creep@mail.com"},
+            {"C-002", "Nirvana", "2020-2020", "litium@mail.com"},
+            {"C-003", "Travis", "3030-3030", "sing@mail.com"},
+            {"C-004", "Oasis", "4040-4040", "wonderwall@mail.com"},
+            };
+        
+        // tabla por defecto
+        DefaultTableModel modelo= new DefaultTableModel(datosTemporales, columnas){
+            @Override
+            public boolean isCellEditable(int fila, int columna){
+                return false;
+            }
+        };
+        
+        // creación de la tabla clientes
+        tablaClientes= new JTable(modelo);
+        
+        // apariencia de la tabla clientes
+        tablaClientes.setRowHeight(42);
+        tablaClientes.setShowVerticalLines(false);
+        tablaClientes.setShowHorizontalLines(true);
+        tablaClientes.setGridColor(BORDE);
+        tablaClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // definición de colores y fuente
+        tablaClientes.setSelectionBackground(new Color(232, 242, 247));
+        tablaClientes.setSelectionForeground(new Color(36, 50, 61));
+        tablaClientes.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        // Encabezados de las columnas
+        tablaClientes.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tablaClientes.getTableHeader().setBackground(AZUL_OSCURO);
+        tablaClientes.getTableHeader().setForeground(Color.WHITE);
+        tablaClientes.getTableHeader().setPreferredSize(new Dimension(0, 42));
+        tablaClientes.setFillsViewportHeight(true);
+        // barras de desplazamiento
+        JScrollPane scroll= new JScrollPane(tablaClientes);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        
+        return scroll;
+        
     }
     
 }
