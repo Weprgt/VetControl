@@ -4,8 +4,9 @@
 
 package com.mycompany.vetcontrol;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import javax.swing.SwingUtilities;
+import com.mycompany.vetcontrol.vista.FrmPrincipal;
+import com.formdev.flatlaf.FlatLightLaf; 
+import javax.swing.SwingUtilities; 
 import javax.swing.UIManager;
 
 /**
@@ -15,15 +16,16 @@ import javax.swing.UIManager;
 public class VetControl {
 
     public static void main(String[] args) {
-        FlatLightLaf.setup();
+        FlatLightLaf.setup(); // Activa el tema claro de FlatLight
         
-        UIManager.put("Component.arc", 10);
-        UIManager.put("Button.arc", 10);
-        UIManager.put("TextComponent.arc", 8);
-        UIManager.put("ScrollBar.width", 12);
+        UIManager.put("Component.arc", 10); // define el redondeo para componentes compatibles
+        UIManager.put("Button.arc", 10); // redondeo de botones
+        UIManager.put("TextComponent.arc", 8); // redondea componentes de texto
+        UIManager.put("ScrollBar.width", 12); // Scrollbars con ancho a 12 pixeles
         
         SwingUtilities.invokeLater(() -> {
-            System.out.println("VetControl iniciado correctamente");
+            FrmPrincipal ventana= new FrmPrincipal();
+            ventana.setVisible(true);
         });
     }
 }
