@@ -12,9 +12,12 @@ import java.awt.GridBagLayout;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -29,6 +32,11 @@ public class FrmLogin extends JFrame {
     private static final Color TEXTO= new Color(36, 50, 61);
     private static final Color TEXTO_SECUNDARIO= new Color(98, 114, 125);
     private static final Color BORDE= new Color(216, 225, 232);
+    
+    // formulario inicio de sesión
+    private JTextField txtUsuario;
+    private JPasswordField txtContrasena;
+    private JButton btnIniciarSesion;
     
     // constructor
     public FrmLogin(){
@@ -65,7 +73,7 @@ public class FrmLogin extends JFrame {
         // Descripcion
         JLabel lblDescripcion= new JLabel(
             "<html>"
-          + "Gestión Clínica simple, segura" + "<br>"
+          + "Gestión clínica simple, segura" + "<br>"
           + "y siempre organizada."
           + "</html>"
         );
@@ -75,6 +83,7 @@ public class FrmLogin extends JFrame {
         lblClinica.setForeground(new Color(187, 212, 208));
         
         // Agregar los componentes
+        
         // Título
         panelPresentacion.add(lblNombre);
         panelPresentacion.add(Box.createVerticalStrut(25));
@@ -95,7 +104,7 @@ public class FrmLogin extends JFrame {
         JPanel tarjetaLogin= new JPanel();
         tarjetaLogin.setLayout(new BoxLayout(tarjetaLogin, BoxLayout.Y_AXIS));
         tarjetaLogin.setBackground(Color.WHITE);
-        tarjetaLogin.setPreferredSize(new Dimension(430, 360));
+        tarjetaLogin.setPreferredSize(new Dimension(430, 480));
         tarjetaLogin.setBorder(
             BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDE, 1, true),
@@ -106,17 +115,80 @@ public class FrmLogin extends JFrame {
         JLabel lblTitulo= new JLabel("Bienvenido");
         lblTitulo.setForeground(TEXTO);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 30));
-        lblTitulo.setAlignmentX(CENTER_ALIGNMENT);
+        lblTitulo.setAlignmentX(LEFT_ALIGNMENT);
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitulo.setMaximumSize(new Dimension(340, 42));
+        
         // Instrucciones
         JLabel lblInstruccion= new JLabel("Ingresa tus datos para continuar");
         lblInstruccion.setForeground(TEXTO_SECUNDARIO);
         lblInstruccion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblInstruccion.setAlignmentX(CENTER_ALIGNMENT);
+        lblInstruccion.setAlignmentX(LEFT_ALIGNMENT);
+        lblInstruccion.setMaximumSize(new Dimension(340, 25));
         lblInstruccion.setHorizontalAlignment(SwingConstants.CENTER);
+        
         // agrega los componentes
         tarjetaLogin.add(lblTitulo);
         tarjetaLogin.add(Box.createVerticalStrut(12));
         tarjetaLogin.add(lblInstruccion);
+        tarjetaLogin.add(Box.createVerticalStrut(35));
+        
+        // Formulario datos de usuario
+        
+        // Etiqueta usuario
+        JLabel lblUsuario= new JLabel("Usuario");
+        lblUsuario.setForeground(TEXTO);
+        lblUsuario.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblUsuario.setAlignmentX(LEFT_ALIGNMENT);        
+        tarjetaLogin.add(lblUsuario);
+        tarjetaLogin.add(Box.createVerticalStrut(8));
+        
+        // Campo de texto usuario
+        txtUsuario = new JTextField();
+        txtUsuario.putClientProperty("JTextField.placeholderText", "Ingresa tu usuario");
+        Dimension tamanoCampo = new Dimension(340, 42);
+        txtUsuario.setMinimumSize(tamanoCampo);
+        txtUsuario.setPreferredSize(tamanoCampo);
+        txtUsuario.setMaximumSize(tamanoCampo);
+        txtUsuario.setAlignmentX(LEFT_ALIGNMENT);
+        tarjetaLogin.add(txtUsuario);
+        tarjetaLogin.add(Box.createVerticalStrut(22));
+        
+        // Etiqueta de contraseña
+        JLabel lblContrasena= new JLabel("Contraseña");
+        lblContrasena.setForeground(TEXTO);
+        lblContrasena.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblContrasena.setAlignmentX(LEFT_ALIGNMENT);
+        tarjetaLogin.add(lblContrasena);
+        tarjetaLogin.add(Box.createVerticalStrut(8));
+        
+        // Campo de contraseña
+        txtContrasena = new JPasswordField();
+        txtContrasena.putClientProperty("JTextField.placeholderText", "Ingresa tu contraseña");
+        txtContrasena.setMinimumSize(tamanoCampo);
+        txtContrasena.setPreferredSize(tamanoCampo);
+        txtContrasena.setMaximumSize(tamanoCampo);
+        txtContrasena.setAlignmentX(LEFT_ALIGNMENT);
+        tarjetaLogin.add(txtContrasena);
+        tarjetaLogin.add(Box.createVerticalStrut(30));
+        
+        // Botón inicio de sesión
+        btnIniciarSesion= new JButton("INICIAR SESIÓN");
+        btnIniciarSesion.setForeground(Color.WHITE);
+        btnIniciarSesion.setBackground(new Color(52, 120, 184));
+        btnIniciarSesion.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnIniciarSesion.setFocusPainted(false);
+        
+        // Dimensiones y colocación del botón
+        Dimension tamanoBoton= new Dimension(340, 44);
+        btnIniciarSesion.setMinimumSize(tamanoBoton);
+        btnIniciarSesion.setPreferredSize(tamanoBoton);
+        btnIniciarSesion.setMaximumSize(tamanoBoton);
+        btnIniciarSesion.setAlignmentX(LEFT_ALIGNMENT);
+        btnIniciarSesion.putClientProperty("JButton.buttonType", "borderless");
+        tarjetaLogin.add(btnIniciarSesion);
+        tarjetaLogin.add(Box.createVerticalStrut(30));
+ 
         panelFormulario.add(tarjetaLogin);
         
         return panelFormulario;       
