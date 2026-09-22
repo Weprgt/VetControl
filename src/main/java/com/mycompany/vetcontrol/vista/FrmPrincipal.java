@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -17,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 
 /**
  *
@@ -26,7 +28,14 @@ public class FrmPrincipal extends JFrame{
     
     // Colores de la aplicación
     private static final Color AZUL_OSCURO= new Color(23, 50, 77);
+    private static final Color AZUL_PRINCIPAL= new Color(52, 120, 184);
+    private static final Color AZUL_CLARO= new Color(232, 242, 247);
+    private static final Color TEXTO= new Color(36, 50, 61);
     private static final Color FONDO= new Color(244, 247, 250);
+    
+    // Botones
+    private JButton botonSeleccionado; // Mostrar botón seleccionado
+    
     
     // Constructor
     public FrmPrincipal() {
@@ -108,7 +117,8 @@ public class FrmPrincipal extends JFrame{
         menuLateral.add(lblNavegacion);
         menuLateral.add(Box.createVerticalStrut(18));
         
-        menuLateral.add(crearBotonMenu("Inicio"));
+        JButton btnInicio= crearBotonMenu("Inicio");
+        menuLateral.add(btnInicio);
         menuLateral.add(Box.createVerticalStrut(5));
         
         menuLateral.add(crearBotonMenu("Clientes"));
@@ -124,6 +134,8 @@ public class FrmPrincipal extends JFrame{
         menuLateral.add(Box.createVerticalStrut(5));
        
         menuLateral.add(crearBotonMenu("Inventario"));
+        
+        seleccionarBoton(btnInicio);
         
         return menuLateral;
         
@@ -142,6 +154,30 @@ public class FrmPrincipal extends JFrame{
         boton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         boton.putClientProperty("JButton.buttonType", "borderless");
         
+        boton.addActionListener(evento->{
+           seleccionarBoton(boton); 
+        });
+        
         return boton;
+    }
+    
+    private void seleccionarBoton(JButton boton) {
+        // Restaura el botón anteriormente seleccionado
+        if(botonSeleccionado != null){
+            botonSeleccionado.setBackground(Color.WHITE);
+            botonSeleccionado.setForeground(TEXTO);
+            botonSeleccionado.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+            botonSeleccionado.setBorder(new EmptyBorder(13, 18, 13, 12));
+        }
+        
+        // Guardar el nuevo botón seleccionado
+        botonSeleccionado= boton;
+        botonSeleccionado.setBackground(AZUL_CLARO);
+        botonSeleccionado.setForeground(AZUL_PRINCIPAL);
+        botonSeleccionado.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        botonSeleccionado.setBorder(BorderFactory.createCompoundBorder(
+            new MatteBorder(0, 4, 0, 0, AZUL_PRINCIPAL), // crea una franja azul
+            new EmptyBorder(13, 14, 13, 12)));
+        
     }
 }
