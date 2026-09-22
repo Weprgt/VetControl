@@ -5,6 +5,7 @@
 package com.mycompany.vetcontrol.vista;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -36,6 +37,10 @@ public class FrmPrincipal extends JFrame{
     // Botones
     private JButton botonSeleccionado; // Mostrar botón seleccionado
     
+    // Cardview
+    private CardLayout cardLayout;
+    private JPanel panelContenido;
+    
     
     // Constructor
     public FrmPrincipal() {
@@ -63,7 +68,7 @@ public class FrmPrincipal extends JFrame{
         JPanel menuLateral= crearMenuLateral();
         
         // Panel de inicio
-        PanelInicio panelInicio= new PanelInicio();
+        panelContenido = crearPanelContenido();
         
         // Añadiendo los componentes a FrmPrincipal
         getContentPane().add( // Barra superior
@@ -75,7 +80,7 @@ public class FrmPrincipal extends JFrame{
             BorderLayout.WEST);
         
         getContentPane().add( // Panel de inicio
-            panelInicio,
+            panelContenido,
             BorderLayout.CENTER);
  
     }
@@ -126,23 +131,23 @@ public class FrmPrincipal extends JFrame{
         menuLateral.add(lblNavegacion);
         menuLateral.add(Box.createVerticalStrut(18));
         
-        JButton btnInicio= crearBotonMenu("Inicio");
+        JButton btnInicio= crearBotonMenu("Inicio", "INICIO");
         menuLateral.add(btnInicio);
         menuLateral.add(Box.createVerticalStrut(5));
         
-        menuLateral.add(crearBotonMenu("Clientes"));
+        menuLateral.add(crearBotonMenu("Clientes", "CLIENTES"));
         menuLateral.add(Box.createVerticalStrut(5));
         
-        menuLateral.add(crearBotonMenu("Mascotas"));
+        menuLateral.add(crearBotonMenu("Mascotas", "MASCOTAS"));
         menuLateral.add(Box.createVerticalStrut(5));
         
-        menuLateral.add(crearBotonMenu("Citas"));
+        menuLateral.add(crearBotonMenu("Citas", "CITAS"));
         menuLateral.add(Box.createVerticalStrut(5));
         
-        menuLateral.add(crearBotonMenu("Historial Clínico"));
+        menuLateral.add(crearBotonMenu("Historial Clínico", "HISTORIAL"));
         menuLateral.add(Box.createVerticalStrut(5));
        
-        menuLateral.add(crearBotonMenu("Inventario"));
+        menuLateral.add(crearBotonMenu("Inventario", "INVENTARIO"));
         
         seleccionarBoton(btnInicio);
         
@@ -150,7 +155,7 @@ public class FrmPrincipal extends JFrame{
         
     }
     
-    private JButton crearBotonMenu(String texto) {
+    private JButton crearBotonMenu(String texto, String pantalla) {
         JButton boton= new JButton(texto);
         
         boton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -164,7 +169,8 @@ public class FrmPrincipal extends JFrame{
         boton.putClientProperty("JButton.buttonType", "borderless");
         
         boton.addActionListener(evento->{
-           seleccionarBoton(boton); 
+           seleccionarBoton(boton);
+           mostrarPantalla(pantalla);
         });
         
         return boton;
@@ -188,5 +194,19 @@ public class FrmPrincipal extends JFrame{
             new MatteBorder(0, 4, 0, 0, AZUL_PRINCIPAL), // crea una franja azul
             new EmptyBorder(13, 14, 13, 12)));
         
+    }
+    
+    private JPanel crearPanelContenido() {
+        cardLayout= new CardLayout();
+        
+        JPanel contenedor= new JPanel(cardLayout);
+        contenedor.add(new PanelInicio(), "INICIO");
+        contenedor.add(new PanelClientes(), "CLIENTES");
+        
+        return contenedor;
+    }
+    
+    private void mostrarPantalla(String pantalla) {
+        cardLayout.show(panelContenido, pantalla);
     }
 }
