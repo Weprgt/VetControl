@@ -62,13 +62,22 @@ public class FrmPrincipal extends JFrame{
         // Menú lateral
         JPanel menuLateral= crearMenuLateral();
         
-        getContentPane().add(
+        // Panel de inicio
+        PanelInicio panelInicio= new PanelInicio();
+        
+        // Añadiendo los componentes a FrmPrincipal
+        getContentPane().add( // Barra superior
             barraSuperior,
             BorderLayout.NORTH);
         
-        getContentPane().add(
+        getContentPane().add( // Menú Lateral
             menuLateral,
             BorderLayout.WEST);
+        
+        getContentPane().add( // Panel de inicio
+            panelInicio,
+            BorderLayout.CENTER);
+ 
     }
     
     private JPanel crearBarraSuperior() {
