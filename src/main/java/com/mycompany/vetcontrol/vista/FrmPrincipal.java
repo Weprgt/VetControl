@@ -169,8 +169,10 @@ public class FrmPrincipal extends JFrame{
         boton.putClientProperty("JButton.buttonType", "borderless");
         
         boton.addActionListener(evento->{
-           seleccionarBoton(boton);
-           mostrarPantalla(pantalla);
+           if(pantalla.equals("INICIO") || pantalla.equals("CLIENTES")){
+               seleccionarBoton(boton);
+               mostrarPantalla(pantalla);
+           }
         });
         
         return boton;
