@@ -4,6 +4,10 @@
 
 package com.mycompany.vetcontrol;
 
+import com.formdev.flatlaf.FlatLightLaf;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
 /**
  *
  * @author weprg
@@ -11,6 +15,15 @@ package com.mycompany.vetcontrol;
 public class VetControl {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        FlatLightLaf.setup();
+        
+        UIManager.put("Component.arc", 10);
+        UIManager.put("Button.arc", 10);
+        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("ScrollBar.width", 12);
+        
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("VetControl iniciado correctamente");
+        });
     }
 }
