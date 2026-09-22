@@ -70,6 +70,7 @@ public class FrmPrincipal extends JFrame{
         lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         
         barraSuperior.add(lblNombreAplicacion, BorderLayout.WEST);
+        barraSuperior.add(lblUsuario, BorderLayout.EAST);
         
         return barraSuperior;
     }   
