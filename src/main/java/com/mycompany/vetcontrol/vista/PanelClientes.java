@@ -6,6 +6,7 @@ package com.mycompany.vetcontrol.vista;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.BorderFactory;
@@ -49,45 +50,53 @@ public class PanelClientes extends JPanel{
         setBackground(FONDO);
         setBorder(new EmptyBorder(40, 45, 40, 45));
         
-        add(crearEncabezado(), BorderLayout.NORTH);
+        JPanel panelEncabezado= crearEncabezado();
+        JPanel tarjetaClientes= crearTarjetaClientes();
+        
+        add(panelEncabezado, BorderLayout.NORTH);
         add(crearTarjetaClientes(), BorderLayout.CENTER);
     }
     
     private JPanel crearEncabezado(){   
         // Panel encabezado
-        JPanel encabezado= new JPanel();
-        encabezado.setLayout(new BoxLayout(encabezado, BoxLayout.Y_AXIS));
-        encabezado.setBackground(FONDO);
+        JPanel panelEncabezado= new JPanel();
+        panelEncabezado.setLayout(new BoxLayout(panelEncabezado, BoxLayout.Y_AXIS));
+        panelEncabezado.setOpaque(false);
         
         // Título del panel
         JLabel lblTitulo= new JLabel("Clientes");
+        lblTitulo.setForeground(AZUL_OSCURO);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // Descripción del panel
         JLabel lblDescripcion= new JLabel("Registro y consulta de propietarios");
         lblDescripcion.setForeground(TEXTO_SECUNDARIO);
         lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // agreamos los componentes
-        add(lblTitulo);
-        add(Box.createVerticalStrut(8));
-        add(lblDescripcion);
+        panelEncabezado.add(lblTitulo);
+        panelEncabezado.add(Box.createVerticalStrut(8));
+        panelEncabezado.add(lblDescripcion);
         
-        return encabezado;
+        return panelEncabezado;
     }
     
     private JPanel crearTarjetaClientes() {
         JPanel tarjeta= new JPanel(new BorderLayout(0, 20));
+        
         // apariencia y posición de la tarjeta
+        tarjeta.setBackground(Color.WHITE);
         tarjeta.setBorder(
             BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(
-                    BORDE, 1, true),
+                BorderFactory.createLineBorder(BORDE, 1, true),
                     new EmptyBorder(20, 32, 28, 32)));
-        tarjeta.add(crearSeccionBusqueda(), BorderLayout.NORTH);
-        
+
         // Agrega la tabla de datos
+        tarjeta.add(crearSeccionBusqueda(), BorderLayout.NORTH);
         tarjeta.add(crearTablaClientes(), BorderLayout.CENTER);
+        
         return tarjeta;
     }
     
@@ -161,7 +170,11 @@ public class PanelClientes extends JPanel{
     
     // Panel tabla de datos
     private JScrollPane crearTablaClientes(){
-        String[] columnas= {"Código", "Nombre completo", "Télefono", "Correo"};
+        String[] columnas= {
+            "Código", 
+            "Nombre completo", 
+            "Teléfono", 
+            "Correo"};
         
         // datos de prueba
         Object[][] datosTemporales= {

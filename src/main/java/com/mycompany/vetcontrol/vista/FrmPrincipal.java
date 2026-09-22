@@ -169,7 +169,9 @@ public class FrmPrincipal extends JFrame{
         boton.putClientProperty("JButton.buttonType", "borderless");
         
         boton.addActionListener(evento->{
-           if(pantalla.equals("INICIO") || pantalla.equals("CLIENTES")){
+           if(pantalla.equals("INICIO")
+                || pantalla.equals("CLIENTES")
+                || pantalla.equals("MASCOTAS")){
                seleccionarBoton(boton);
                mostrarPantalla(pantalla);
            }
@@ -204,6 +206,7 @@ public class FrmPrincipal extends JFrame{
         JPanel contenedor= new JPanel(cardLayout);
         contenedor.add(new PanelInicio(), "INICIO");
         contenedor.add(new PanelClientes(), "CLIENTES");
+        contenedor.add(new PanelMascotas(), "MASCOTAS");
         
         return contenedor;
     }
