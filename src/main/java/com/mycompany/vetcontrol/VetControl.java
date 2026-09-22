@@ -4,8 +4,8 @@
 
 package com.mycompany.vetcontrol;
 
-import com.mycompany.vetcontrol.vista.FrmPrincipal;
 import com.formdev.flatlaf.FlatLightLaf; 
+import com.mycompany.vetcontrol.vista.FrmLogin;
 import javax.swing.SwingUtilities; 
 import javax.swing.UIManager;
 
@@ -24,7 +24,7 @@ public class VetControl {
         UIManager.put("ScrollBar.width", 12); // Scrollbars con ancho a 12 pixeles
         
         SwingUtilities.invokeLater(() -> {
-            FrmPrincipal ventana= new FrmPrincipal();
+            FrmLogin ventana= new FrmLogin();
             ventana.setVisible(true);
         });
     }
