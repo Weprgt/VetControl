@@ -1,0 +1,3 @@
+db.url=jdbc:mysql://localhost:3306/vetcontrol?serverTimezone=America/Guatemala&useSSL=false&allowPublicKeyRetrieval=true
+db.usuario=root
+db.contrasena=CAMBIAR_CONTRASENA

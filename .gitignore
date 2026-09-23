@@ -1,1 +1,14 @@
+# Archivos generados por Maven
 /target/
+*.class
+*.log
+
+# Configuración privada de NetBeans
+/nbproject/private/
+
+# Credenciales locales de MySQL
+/src/main/resources/config.properties
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
