@@ -171,7 +171,8 @@ public class FrmPrincipal extends JFrame{
         boton.addActionListener(evento->{
            if(pantalla.equals("INICIO")
                 || pantalla.equals("CLIENTES")
-                || pantalla.equals("MASCOTAS")){
+                || pantalla.equals("MASCOTAS")
+                || pantalla.equals("CITAS")){
                seleccionarBoton(boton);
                mostrarPantalla(pantalla);
            }
@@ -207,6 +208,7 @@ public class FrmPrincipal extends JFrame{
         contenedor.add(new PanelInicio(), "INICIO");
         contenedor.add(new PanelClientes(), "CLIENTES");
         contenedor.add(new PanelMascotas(), "MASCOTAS");
+        contenedor.add(new PanelCitas(), "CITAS");
         
         return contenedor;
     }
