@@ -168,7 +168,7 @@ public class PanelMascotas extends JPanel{
     private JScrollPane crearTablaMascotas() {
         // Nombres de las columnas.
         String[] columnas = {
-            "Código",
+            "Expediente",
             "Mascota",
             "Especie",
             "Raza",
@@ -177,10 +177,10 @@ public class PanelMascotas extends JPanel{
         };
 
         Object[][] datosTemporales = {
-            {"M-001", "Spike", "Perro", "Bulldog", "4 años", "Tom"},
-            {"M-002", "Garfield", "Gato", "Naranja rayado", "6 años", "John"},
-            {"M-003", "Snoopy", "Perro", "Beagle", "5 años", "Charlie Brown"},
-            {"M-004", "Pelusa", "Gato", "Común", "3 año", "Angelica"}
+            {"EXP-001", "Spike", "Perro", "Bulldog", "4 años", "Tom"},
+            {"EXP-002", "Garfield", "Gato", "Naranja rayado", "6 años", "John"},
+            {"EXP-003", "Snoopy", "Perro", "Beagle", "5 años", "Charlie Brown"},
+            {"EXP-004", "Pelusa", "Gato", "Común", "3 año", "Angelica"}
         };
 
         // Modelo que controla los datos de la tabla.

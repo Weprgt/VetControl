@@ -134,7 +134,7 @@ public class PanelClientes extends JPanel{
         // Lista de botones
         JButton btnBuscar= crearBoton("Buscar", AZUL_PRINCIPAL);
         JButton btnNuevo= crearBoton("+ Nuevo", TURQUESA);
-        JButton btnEliminar= crearBoton("Eliminar", ROJO);
+        JButton btnEliminar= crearBoton("Desactivar", ROJO);
         
         // Agrega los botones
         panelBotones.add(btnBuscar);
