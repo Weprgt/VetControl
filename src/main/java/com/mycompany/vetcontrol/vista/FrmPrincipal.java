@@ -172,7 +172,9 @@ public class FrmPrincipal extends JFrame{
            if(pantalla.equals("INICIO")
                 || pantalla.equals("CLIENTES")
                 || pantalla.equals("MASCOTAS")
-                || pantalla.equals("CITAS")){
+                || pantalla.equals("CITAS")
+                || pantalla.equals("HISTORIAL")
+                || pantalla.equals("INVENTARIO")){
                seleccionarBoton(boton);
                mostrarPantalla(pantalla);
            }
@@ -209,6 +211,8 @@ public class FrmPrincipal extends JFrame{
         contenedor.add(new PanelClientes(), "CLIENTES");
         contenedor.add(new PanelMascotas(), "MASCOTAS");
         contenedor.add(new PanelCitas(), "CITAS");
+        contenedor.add(new PanelHistorialClinico(), "HISTORIAL");
+        contenedor.add(new PanelInventario(), "INVENTARIO");
         
         return contenedor;
     }
