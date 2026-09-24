@@ -4,8 +4,8 @@
  */
 package com.mycompany.vetcontrol.dao;
 
-import com.mycompany.vetcontrol.modelo.MovimientosInventario;
-import com.mycompany.vetcontrol.modelo.MovimientosInventario.TipoMovimiento;
+import com.mycompany.vetcontrol.modelo.MovimientoInventario;
+import com.mycompany.vetcontrol.modelo.MovimientoInventario.TipoMovimiento;
 import com.mycompany.vetcontrol.util.ConexionBD;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,7 +52,7 @@ public class MovimientosInventarioDAO {
      * @param movimiento movimiento que se desea registrar
      * @return true si ambas operaciones fueron exitosas
      */
-    public boolean registrar(MovimientosInventario movimiento) {
+    public boolean registrar(MovimientoInventario movimiento) {
 
         if (movimiento == null) {
             System.err.println(
@@ -231,7 +231,7 @@ public class MovimientosInventarioDAO {
      */
     private void insertarMovimiento(
             Connection conexion,
-            MovimientosInventario movimiento)
+            MovimientoInventario movimiento)
             throws SQLException {
 
         String sql = """
@@ -328,9 +328,9 @@ public class MovimientosInventarioDAO {
     /**
      * Obtiene todos los movimientos, empezando por el más reciente.
      */
-    public List<MovimientosInventario> listar() {
+    public List<MovimientoInventario> listar() {
 
-        List<MovimientosInventario> movimientos =
+        List<MovimientoInventario> movimientos =
             new ArrayList<>();
 
         String sql = CONSULTA_BASE
@@ -362,10 +362,10 @@ public class MovimientosInventarioDAO {
     /**
      * Obtiene el historial de movimientos de un producto.
      */
-    public List<MovimientosInventario> listarPorProducto(
+    public List<MovimientoInventario> listarPorProducto(
             int idProducto) {
 
-        List<MovimientosInventario> movimientos =
+        List<MovimientoInventario> movimientos =
             new ArrayList<>();
 
         String sql = CONSULTA_BASE + """
@@ -402,9 +402,9 @@ public class MovimientosInventarioDAO {
     /**
      * Busca por código, producto, tipo, motivo o usuario.
      */
-    public List<MovimientosInventario> buscar(String texto) {
+    public List<MovimientoInventario> buscar(String texto) {
 
-        List<MovimientosInventario> movimientos =
+        List<MovimientoInventario> movimientos =
             new ArrayList<>();
 
         String sql = CONSULTA_BASE + """
@@ -451,11 +451,11 @@ public class MovimientosInventarioDAO {
     /**
      * Convierte una fila de MySQL en un movimiento.
      */
-    private MovimientosInventario convertirMovimiento(
+    private MovimientoInventario convertirMovimiento(
             ResultSet resultado) throws SQLException {
 
-        MovimientosInventario movimiento =
-            new MovimientosInventario();
+        MovimientoInventario movimiento =
+            new MovimientoInventario();
 
         movimiento.setIdMovimiento(
             resultado.getInt("id_movimiento")
