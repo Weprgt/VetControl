@@ -4,22 +4,27 @@
  */
 package com.mycompany.vetcontrol.vista;
 
+import com.mycompany.vetcontrol.modelo.Usuario;
+import com.mycompany.vetcontrol.servicio.ServicioAutenticacion;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
 
 /**
  *
@@ -186,11 +191,82 @@ public class FrmLogin extends JFrame {
         btnIniciarSesion.setMaximumSize(tamanoBoton);
         btnIniciarSesion.setAlignmentX(LEFT_ALIGNMENT);
         btnIniciarSesion.putClientProperty("JButton.buttonType", "borderless");
+        btnIniciarSesion.addActionListener(evento -> iniciarSesion());
+        getRootPane().setDefaultButton(btnIniciarSesion);
         tarjetaLogin.add(btnIniciarSesion);
         tarjetaLogin.add(Box.createVerticalStrut(30));
  
         panelFormulario.add(tarjetaLogin);
         
         return panelFormulario;       
+    }
+    private void iniciarSesion() {
+
+    String nombreUsuario =
+        txtUsuario.getText().trim();
+
+    char[] contrasena =
+        txtContrasena.getPassword();
+
+    if (nombreUsuario.isBlank()
+            || contrasena.length == 0) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Ingresa tu usuario y contraseña.",
+            "Datos incompletos",
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    /*
+     * Evita varios clics mientras se realiza la consulta.
+     */
+    btnIniciarSesion.setEnabled(false);
+
+    try {
+        ServicioAutenticacion servicio =
+            new ServicioAutenticacion();
+
+        Usuario usuario =
+            servicio.autenticar(
+                nombreUsuario,
+                contrasena
+            );
+
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Usuario o contraseña incorrectos.",
+                "Acceso denegado",
+                JOptionPane.ERROR_MESSAGE
+            );
+
+            txtContrasena.setText("");
+            txtContrasena.requestFocus();
+
+            return;
+        }
+
+        /*
+         * Cierra el inicio de sesión y abre la aplicación.
+         */
+        dispose();
+
+        FrmPrincipal ventanaPrincipal =
+            new FrmPrincipal(usuario);
+
+        ventanaPrincipal.setVisible(true);
+
+        } finally {
+            /*
+             * Borra la contraseña del arreglo en memoria.
+             */
+            Arrays.fill(contrasena, '\0');
+
+            btnIniciarSesion.setEnabled(true);
+        }
     }
 }

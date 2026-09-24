@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import com.mycompany.vetcontrol.modelo.Usuario;
 
 /**
  *
@@ -41,9 +42,12 @@ public class FrmPrincipal extends JFrame{
     private CardLayout cardLayout;
     private JPanel panelContenido;
     
+    private final Usuario usuarioActual;
     
     // Constructor
-    public FrmPrincipal() {
+    public FrmPrincipal(Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
+
         configurarVentana();
         crearInterfaz();
     }
@@ -101,7 +105,8 @@ public class FrmPrincipal extends JFrame{
         lblNombreAplicacion.setFont(new Font("Segoe UI", Font.BOLD, 24));
         
         // Usuario/Cliente/Administrador
-        JLabel lblUsuario= new JLabel("Administrador");
+        JLabel lblUsuario = new JLabel(usuarioActual.getNombreCompleto()
+            + " · "  + usuarioActual.getNombreRol());
         lblUsuario.setForeground(Color.WHITE);
         lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         
