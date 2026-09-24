@@ -65,7 +65,7 @@ public final class ConexionBD {
      * @return conexión abierta
      * @throws SQLException si MySQL rechaza la conexión
      */
-    public static Connection obtenerConexion()
+    public static Connection getConexion()
             throws SQLException {
 
         String url =

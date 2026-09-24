@@ -38,7 +38,7 @@ public class ClienteDAO {
 
         try (
             Connection conexion =
-                ConexionBD.obtenerConexion();
+                ConexionBD.getConexion();
 
             PreparedStatement sentencia =
                 conexion.prepareStatement(
@@ -119,7 +119,7 @@ public class ClienteDAO {
 
         try (
             Connection conexion =
-                ConexionBD.obtenerConexion();
+                ConexionBD.getConexion();
 
             PreparedStatement sentencia =
                 conexion.prepareStatement(sql);
@@ -176,7 +176,7 @@ public class ClienteDAO {
 
         try (
             Connection conexion =
-                ConexionBD.obtenerConexion();
+                ConexionBD.getConexion();
 
             PreparedStatement sentencia =
                 conexion.prepareStatement(sql)
@@ -218,7 +218,7 @@ public class ClienteDAO {
 
         try (
             Connection conexion =
-                ConexionBD.obtenerConexion();
+                ConexionBD.getConexion();
 
             PreparedStatement sentencia =
                 conexion.prepareStatement(sql)
@@ -274,7 +274,7 @@ public class ClienteDAO {
 
         try (
             Connection conexion =
-                ConexionBD.obtenerConexion();
+                ConexionBD.getConexion();
 
             PreparedStatement sentencia =
                 conexion.prepareStatement(sql)
