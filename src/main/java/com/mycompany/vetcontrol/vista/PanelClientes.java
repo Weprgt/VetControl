@@ -4,11 +4,15 @@
  */
 package com.mycompany.vetcontrol.vista;
 
+import com.mycompany.vetcontrol.dao.ClienteDAO;
+import com.mycompany.vetcontrol.modelo.Cliente;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -21,6 +25,9 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import java.awt.Window;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -40,9 +47,27 @@ public class PanelClientes extends JPanel{
     // Tabla de datos
     private JTable tablaClientes;
     
-    
+    // Acceso a los clientes almacenados en MySQL.
+    private final ClienteDAO clienteDAO;
+
+    // Modelo utilizado para modificar las filas de la tabla.
+    private DefaultTableModel modeloTabla;
+
+    // Componentes que necesitan utilizar los eventos.
+    private JTextField txtBuscar;
+    private JButton btnBuscar;
+    private JButton btnNuevo;
+    private JButton btnEliminar;
+    private JButton btnEditar;
+
+    private List<Cliente> clientesMostrados =
+        new ArrayList<>();
+
     public PanelClientes() {
+        clienteDAO = new ClienteDAO();
+
         crearInterfaz();
+        cargarClientes();
     }
     
     private void crearInterfaz() {
@@ -54,7 +79,7 @@ public class PanelClientes extends JPanel{
         JPanel tarjetaClientes= crearTarjetaClientes();
         
         add(panelEncabezado, BorderLayout.NORTH);
-        add(crearTarjetaClientes(), BorderLayout.CENTER);
+        add(tarjetaClientes, BorderLayout.CENTER);
     }
     
     private JPanel crearEncabezado(){   
@@ -111,9 +136,10 @@ public class PanelClientes extends JPanel{
         lblBuscar.setFont(new Font("Segoe UI", Font.BOLD, 15));
         
         // Cuadro de busqueda
-        JTextField txtBuscar= new JTextField();
+        txtBuscar = new JTextField();
         txtBuscar.putClientProperty("JTextField.placeholderText", "Nombre, teléfono o correo...");
         txtBuscar.setPreferredSize(new Dimension(300, 42));
+        txtBuscar.addActionListener(evento -> buscarClientes());
         
         // Panel de botones
         JPanel panelBotones= crearPanelBotones();
@@ -126,25 +152,71 @@ public class PanelClientes extends JPanel{
     }
     
     private JPanel crearPanelBotones() {
-        JPanel panelBotones= new JPanel();
-        
-        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.X_AXIS));
+
+        JPanel panelBotones = new JPanel();
+
+        panelBotones.setLayout(
+            new BoxLayout(
+                panelBotones,
+                BoxLayout.X_AXIS
+            )
+        );
+
         panelBotones.setBackground(Color.WHITE);
-        
-        // Lista de botones
-        JButton btnBuscar= crearBoton("Buscar", AZUL_PRINCIPAL);
-        JButton btnNuevo= crearBoton("+ Nuevo", TURQUESA);
-        JButton btnEliminar= crearBoton("Desactivar", ROJO);
-        
-        // Agrega los botones
+
+        btnBuscar = crearBoton(
+            "Buscar",
+            AZUL_PRINCIPAL
+        );
+
+        btnNuevo = crearBoton(
+            "+ Nuevo",
+            TURQUESA
+        );
+
+        btnEditar = crearBoton(
+            "Editar",
+            new Color(242, 161, 62)
+        );
+
+        btnEliminar = crearBoton(
+            "Desactivar",
+            ROJO
+        );
+
+        btnBuscar.addActionListener(
+            evento -> buscarClientes()
+        );
+
+        btnNuevo.addActionListener(
+            evento -> nuevoCliente()
+        );
+
+        btnEditar.addActionListener(
+            evento -> editarCliente()
+        );
+
+        btnEliminar.addActionListener(
+            evento -> desactivarCliente()
+        );
+
         panelBotones.add(btnBuscar);
-        panelBotones.add(Box.createHorizontalStrut(10));
-        
+        panelBotones.add(
+            Box.createHorizontalStrut(10)
+        );
+
         panelBotones.add(btnNuevo);
-        panelBotones.add(Box.createHorizontalStrut(10));
-        
+        panelBotones.add(
+            Box.createHorizontalStrut(10)
+        );
+
+        panelBotones.add(btnEditar);
+        panelBotones.add(
+            Box.createHorizontalStrut(10)
+        );
+
         panelBotones.add(btnEliminar);
-        
+
         return panelBotones;
     }
     
@@ -174,26 +246,22 @@ public class PanelClientes extends JPanel{
             "Código", 
             "Nombre completo", 
             "Teléfono", 
-            "Correo"};
+            "Correo",
+            "direccion"};
         
-        // datos de prueba
-        Object[][] datosTemporales= {
-            {"C-001", "Radiohead", "1010-1010", "creep@mail.com"},
-            {"C-002", "Nirvana", "2020-2020", "litium@mail.com"},
-            {"C-003", "Travis", "3030-3030", "sing@mail.com"},
-            {"C-004", "Oasis", "4040-4040", "wonderwall@mail.com"},
-            };
-        
-        // tabla por defecto
-        DefaultTableModel modelo= new DefaultTableModel(datosTemporales, columnas){
-            @Override
-            public boolean isCellEditable(int fila, int columna){
-                return false;
-            }
-        };
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+
+    @Override
+    public boolean isCellEditable(
+            int fila,
+            int columna) {
+
+        return false;
+    }
+};
         
         // creación de la tabla clientes
-        tablaClientes= new JTable(modelo);
+        tablaClientes = new JTable(modeloTabla);
         
         // apariencia de la tabla clientes
         tablaClientes.setRowHeight(42);
@@ -217,6 +285,246 @@ public class PanelClientes extends JPanel{
         
         return scroll;
         
+    }
+    /**
+    * Obtiene todos los clientes activos desde MySQL.
+    */
+    private void cargarClientes() {
+
+        List<Cliente> clientes =
+            clienteDAO.listarActivos();
+
+        mostrarClientes(clientes);
+}
+
+    /**
+     * Busca utilizando el contenido del campo de texto.
+     */
+    private void buscarClientes() {
+
+        String criterio =
+            txtBuscar.getText().trim();
+
+        /*
+         * Si el campo está vacío, vuelve a mostrar
+         * todos los clientes activos.
+         */
+        if (criterio.isBlank()) {
+            cargarClientes();
+            return;
+        }
+
+        List<Cliente> clientes =
+            clienteDAO.buscar(criterio);
+
+        mostrarClientes(clientes);
+    }
+
+    /**
+     * Coloca una lista de clientes dentro de la tabla.
+     */
+    private void mostrarClientes(
+        List<Cliente> clientes) {
+
+        clientesMostrados =
+            new ArrayList<>(clientes);
+
+        modeloTabla.setRowCount(0);
+
+        for (Cliente cliente : clientesMostrados) {
+
+            modeloTabla.addRow(new Object[] {
+                cliente.getCodigoVisible(),
+                cliente.getNombreCompleto(),
+                cliente.getTelefono(),
+                cliente.getCorreo(),
+                cliente.getDireccion()
+            });
+        }
+    }
+    /**
+ * Abre el formulario para registrar un cliente.
+ */
+private void nuevoCliente() {
+
+    Window ventana =
+        SwingUtilities.getWindowAncestor(this);
+
+    DlgCliente dialogo =
+        new DlgCliente(ventana, null);
+
+    dialogo.setVisible(true);
+
+    Cliente cliente =
+        dialogo.getClienteConfirmado();
+
+    if (cliente == null) {
+        return;
+    }
+
+    if (clienteDAO.insertar(cliente)) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Cliente registrado correctamente.",
+            "Registro exitoso",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+
+        cargarClientes();
+
+    } else {
+        JOptionPane.showMessageDialog(
+            this,
+            "No se pudo registrar el cliente.\n"
+            + "Verifica que el correo no esté repetido.",
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
+
+    /**
+     * Edita el cliente seleccionado.
+     */
+    private void editarCliente() {
+
+        Cliente cliente =
+            obtenerClienteSeleccionado();
+
+        if (cliente == null) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Selecciona un cliente para editar.",
+                "Cliente no seleccionado",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        Window ventana =
+            SwingUtilities.getWindowAncestor(this);
+
+        DlgCliente dialogo =
+            new DlgCliente(ventana, cliente);
+
+        dialogo.setVisible(true);
+
+        Cliente clienteEditado =
+            dialogo.getClienteConfirmado();
+
+        if (clienteEditado == null) {
+            return;
+        }
+
+        if (clienteDAO.actualizar(clienteEditado)) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cliente actualizado correctamente.",
+                "Actualización exitosa",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } else {
+            JOptionPane.showMessageDialog(
+                this,
+                "No se pudo actualizar el cliente.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+        /*
+         * Recarga incluso si hubo error para restaurar
+         * los valores verdaderos de MySQL.
+         */
+        cargarClientes();
+    }
+
+    /**
+     * Desactiva al cliente seleccionado.
+     */
+    private void desactivarCliente() {
+
+        Cliente cliente =
+            obtenerClienteSeleccionado();
+
+        if (cliente == null) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Selecciona un cliente para desactivar.",
+                "Cliente no seleccionado",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        int respuesta =
+            JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas desactivar a "
+                + cliente.getNombreCompleto()
+                + "?",
+                "Confirmar desactivación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+        if (respuesta != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        if (clienteDAO.desactivar(
+                cliente.getIdCliente())) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cliente desactivado correctamente.",
+                "Operación exitosa",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarClientes();
+
+        } else {
+            JOptionPane.showMessageDialog(
+                this,
+                "No se pudo desactivar el cliente.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Obtiene el objeto correspondiente a la fila seleccionada.
+     */
+    private Cliente obtenerClienteSeleccionado() {
+
+        int filaVista =
+            tablaClientes.getSelectedRow();
+
+        if (filaVista < 0) {
+            return null;
+        }
+
+        int filaModelo =
+            tablaClientes.convertRowIndexToModel(
+                filaVista
+            );
+
+        if (filaModelo < 0
+                || filaModelo >= clientesMostrados.size()) {
+
+            return null;
+        }
+
+        return clientesMostrados.get(filaModelo);
     }
     
 }

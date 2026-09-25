@@ -27,8 +27,7 @@ public class ClienteDAO {
      *
      * @return true si el cliente fue insertado
      */
-    public boolean insertar(Cliente cliente)
-            throws SQLException {
+    public boolean insertar(Cliente cliente) {
 
         String sql =
             "INSERT INTO clientes "
@@ -49,17 +48,17 @@ public class ClienteDAO {
 
             sentencia.setString(
                 1,
-                cliente.getNombres()
+                cliente.getNombres().trim()
             );
 
             sentencia.setString(
                 2,
-                cliente.getApellidos()
+                cliente.getApellidos().trim()
             );
 
             sentencia.setString(
                 3,
-                cliente.getTelefono()
+                cliente.getTelefono().trim()
             );
 
             establecerTextoNullable(
@@ -78,7 +77,7 @@ public class ClienteDAO {
                 sentencia.executeUpdate();
 
             /*
-             * Recuperar el ID AUTO_INCREMENT
+             * Recupera el ID AUTO_INCREMENT
              * generado por MySQL.
              */
             if (filasAfectadas > 0) {
@@ -96,15 +95,20 @@ public class ClienteDAO {
                 return true;
             }
 
-            return false;
+        } catch (SQLException error) {
+            mostrarError(
+                "insertar",
+                error
+            );
         }
+
+        return false;
     }
 
     /**
      * Devuelve todos los clientes activos.
      */
-    public List<Cliente> listarActivos()
-            throws SQLException {
+    public List<Cliente> listarActivos() {
 
         List<Cliente> clientes =
             new ArrayList<>();
@@ -133,6 +137,12 @@ public class ClienteDAO {
                     convertirEnCliente(resultado)
                 );
             }
+
+        } catch (SQLException error) {
+            mostrarError(
+                "listar",
+                error
+            );
         }
 
         return clientes;
@@ -142,8 +152,7 @@ public class ClienteDAO {
      * Busca clientes activos por código visible,
      * nombre, teléfono o correo.
      */
-    public List<Cliente> buscar(String criterio)
-            throws SQLException {
+    public List<Cliente> buscar(String criterio) {
 
         List<Cliente> clientes =
             new ArrayList<>();
@@ -154,7 +163,7 @@ public class ClienteDAO {
                 : criterio.trim();
 
         /*
-         * Convierte C-0003 en 3 para poder buscar
+         * Convierte C-0003 en 3 para buscar
          * directamente por id_cliente.
          */
         String posibleId =
@@ -172,7 +181,8 @@ public class ClienteDAO {
             + "OR correo LIKE ?) "
             + "ORDER BY nombres, apellidos";
 
-        String patron = "%" + texto + "%";
+        String patron =
+            "%" + texto + "%";
 
         try (
             Connection conexion =
@@ -187,8 +197,10 @@ public class ClienteDAO {
             sentencia.setString(3, patron);
             sentencia.setString(4, patron);
 
-            try (ResultSet resultado =
-                    sentencia.executeQuery()) {
+            try (
+                ResultSet resultado =
+                    sentencia.executeQuery()
+            ) {
 
                 while (resultado.next()) {
                     clientes.add(
@@ -196,6 +208,12 @@ public class ClienteDAO {
                     );
                 }
             }
+
+        } catch (SQLException error) {
+            mostrarError(
+                "buscar",
+                error
+            );
         }
 
         return clientes;
@@ -204,8 +222,7 @@ public class ClienteDAO {
     /**
      * Actualiza los datos editables de un cliente.
      */
-    public boolean actualizar(Cliente cliente)
-            throws SQLException {
+    public boolean actualizar(Cliente cliente) {
 
         String sql =
             "UPDATE clientes "
@@ -214,7 +231,8 @@ public class ClienteDAO {
             + "telefono = ?, "
             + "correo = ?, "
             + "direccion = ? "
-            + "WHERE id_cliente = ?";
+            + "WHERE id_cliente = ? "
+            + "AND activo = TRUE";
 
         try (
             Connection conexion =
@@ -226,17 +244,17 @@ public class ClienteDAO {
 
             sentencia.setString(
                 1,
-                cliente.getNombres()
+                cliente.getNombres().trim()
             );
 
             sentencia.setString(
                 2,
-                cliente.getApellidos()
+                cliente.getApellidos().trim()
             );
 
             sentencia.setString(
                 3,
-                cliente.getTelefono()
+                cliente.getTelefono().trim()
             );
 
             establecerTextoNullable(
@@ -257,14 +275,21 @@ public class ClienteDAO {
             );
 
             return sentencia.executeUpdate() > 0;
+
+        } catch (SQLException error) {
+            mostrarError(
+                "actualizar",
+                error
+            );
         }
+
+        return false;
     }
 
     /**
      * Desactiva un cliente sin eliminar su historial.
      */
-    public boolean desactivar(int idCliente)
-            throws SQLException {
+    public boolean desactivar(int idCliente) {
 
         String sql =
             "UPDATE clientes "
@@ -280,15 +305,29 @@ public class ClienteDAO {
                 conexion.prepareStatement(sql)
         ) {
 
-            sentencia.setInt(1, idCliente);
+            sentencia.setInt(
+                1,
+                idCliente
+            );
 
             return sentencia.executeUpdate() > 0;
+
+        } catch (SQLException error) {
+            mostrarError(
+                "desactivar",
+                error
+            );
         }
+
+        return false;
     }
 
     /**
      * Convierte una fila del ResultSet
      * en un objeto Cliente.
+     *
+     * Este método sí puede declarar SQLException porque
+     * se ejecuta dentro de los try/catch del DAO.
      */
     private Cliente convertirEnCliente(
             ResultSet resultado)
@@ -315,9 +354,6 @@ public class ClienteDAO {
 
     /**
      * Guarda NULL cuando el texto está vacío.
-     *
-     * Esto evita almacenar cadenas vacías en
-     * columnas opcionales como correo y dirección.
      */
     private void establecerTextoNullable(
             PreparedStatement sentencia,
@@ -334,7 +370,6 @@ public class ClienteDAO {
             );
 
         } else {
-
             sentencia.setString(
                 posicion,
                 texto.trim()
@@ -355,10 +390,6 @@ public class ClienteDAO {
             texto = texto.substring(2);
         }
 
-        /*
-         * Solo devuelve el contenido cuando
-         * está formado completamente por números.
-         */
         if (texto.matches("\\d+")) {
             return String.valueOf(
                 Integer.parseInt(texto)
@@ -366,5 +397,27 @@ public class ClienteDAO {
         }
 
         return "-1";
+    }
+
+    /**
+     * Centraliza los mensajes de error del DAO.
+     */
+    private void mostrarError(
+            String operacion,
+            SQLException error) {
+
+        if (error.getErrorCode() == 1062) {
+            System.err.println(
+                "No se pudo " + operacion
+                + " el cliente: el correo ya está registrado."
+            );
+
+        } else {
+            System.err.println(
+                "Error al " + operacion
+                + " clientes: "
+                + error.getMessage()
+            );
+        }
     }
 }
