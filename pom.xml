@@ -23,5 +23,11 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>9.7.0</version>
         </dependency>
+        <!-- Selector de fecha y hora -->
+        <dependency>
+            <groupId>com.github.lgooddatepicker</groupId>
+            <artifactId>LGoodDatePicker</artifactId>
+            <version>11.2.1</version>
+        </dependency>
     </dependencies>
 </project>

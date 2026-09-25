@@ -4,11 +4,20 @@
  */
 package com.mycompany.vetcontrol.vista;
 
+import com.mycompany.vetcontrol.dao.CitaDAO;
+import com.mycompany.vetcontrol.modelo.Cita;
+import com.mycompany.vetcontrol.dao.MascotaDAO;
+import com.mycompany.vetcontrol.dao.VeterinarioDAO;
+import com.mycompany.vetcontrol.modelo.Mascota;
+import com.mycompany.vetcontrol.modelo.Veterinario;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -21,6 +30,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -36,12 +47,47 @@ public class PanelCitas extends JPanel {
     private static final Color TURQUESA= new Color(67, 166, 160);
     private static final Color ROJO= new Color(217, 92, 89);
     private static final Color BORDE= new Color(216, 225, 232);
+    private static final Color NARANJA= new Color(242, 161, 62);
 
     // Tabla que mostrará las citas registradas
     private JTable tablaCitas;
+    
+    // Acceso a las citas almacenadas en MySQL.
+    private final CitaDAO citaDAO;
+
+    // Modelo utilizado para modificar las filas de la tabla.
+    private DefaultTableModel modeloTabla;
+
+    // Campo de búsqueda utilizado por sus eventos.
+    private JTextField txtBuscar;
+
+    // Conserva el orden de las citas mostradas.
+    private List<Cita> citasMostradas =
+        new ArrayList<>();
+
+    // Formatos utilizados en la tabla.
+    private static final DateTimeFormatter FORMATO_FECHA =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private static final DateTimeFormatter FORMATO_HORA =
+        DateTimeFormatter.ofPattern("HH:mm");
+    
+    // botones de busqueda y obtener información de la mascota y veterinario
+    private final MascotaDAO mascotaDAO;
+    private final VeterinarioDAO veterinarioDAO;
+
+    private JButton btnBuscar;
+    private JButton btnNueva;
+    private JButton btnEditar;
+    private JButton btnCancelar;
 
     public PanelCitas() {
+        citaDAO = new CitaDAO();
+        mascotaDAO = new MascotaDAO();
+        veterinarioDAO = new VeterinarioDAO();
+
         crearInterfaz();
+        cargarCitas();
     }
 
     private void crearInterfaz() {
@@ -107,7 +153,21 @@ public class PanelCitas extends JPanel {
         lblBuscar.setFont(new Font("Segoe UI", Font.BOLD, 15));
         
         // Campo de búsqueda
-        JTextField txtBuscar= new JTextField();
+        txtBuscar = new JTextField();
+
+        txtBuscar.putClientProperty(
+            "JTextField.placeholderText",
+            "Mascota, propietario, veterinario, motivo o estado..."
+        );
+
+        txtBuscar.setPreferredSize(
+            new Dimension(300, 42)
+        );
+
+        // Permite buscar presionando Enter.
+        txtBuscar.addActionListener(
+            evento -> buscarCitas()
+        );
         txtBuscar.putClientProperty("JTextField.placeholderText", "Mascota, propietario o veterinario...");
         txtBuscar.setPreferredSize(new Dimension(300, 42));
         
@@ -123,21 +183,58 @@ public class PanelCitas extends JPanel {
     }
     
     private JPanel crearPanelBotones() {
-        JPanel panelBotones= new JPanel();
-        
-        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.X_AXIS));
+
+        JPanel panelBotones = new JPanel();
+
+        panelBotones.setLayout(
+            new BoxLayout(panelBotones, BoxLayout.X_AXIS)
+        );
+
         panelBotones.setBackground(Color.WHITE);
-        
-        // Crear botones
-        JButton btnBuscar= crearBoton("Buscar", AZUL_PRINCIPAL);
-        JButton btnNueva= crearBoton("+ Nueva", TURQUESA);
-        JButton btnCancelar= crearBoton("Cancelar", ROJO);
-        
-        // Agreagar botones
+
+        btnBuscar = crearBoton(
+            "Buscar",
+            AZUL_PRINCIPAL
+        );
+
+        btnNueva = crearBoton(
+            "+ Nueva",
+            TURQUESA
+        );
+
+        btnEditar = crearBoton(
+            "Editar",
+            NARANJA
+        );
+
+        btnCancelar = crearBoton(
+            "Cancelar",
+            ROJO
+        );
+
+        btnBuscar.addActionListener(
+            evento -> buscarCitas()
+        );
+
+        btnNueva.addActionListener(
+            evento -> registrarCita()
+        );
+
+        btnEditar.addActionListener(
+            evento -> editarCita()
+        );
+
+        btnCancelar.addActionListener(
+            evento -> cancelarCita()
+        );
+
         panelBotones.add(btnBuscar);
         panelBotones.add(Box.createHorizontalStrut(10));
 
         panelBotones.add(btnNueva);
+        panelBotones.add(Box.createHorizontalStrut(10));
+
+        panelBotones.add(btnEditar);
         panelBotones.add(Box.createHorizontalStrut(10));
 
         panelBotones.add(btnCancelar);
@@ -168,63 +265,471 @@ public class PanelCitas extends JPanel {
         return boton;
     }
     
-    private JScrollPane crearTablaCitas() {
-    // Columnas necesarias para identificar una cita
+    /**
+ * Construye la tabla que mostrará las citas de MySQL.
+ */
+private JScrollPane crearTablaCitas() {
+
     String[] columnas = {
         "Código",
         "Fecha",
         "Hora",
         "Mascota",
+        "Expediente",
+        "Propietario",
         "Veterinario",
+        "Motivo",
         "Estado"
     };
 
-    // Datos temporales para comprobar el diseño
-    Object[][] datosTemporales = {
-        {"CT-001", "22/09/2026", "09:00", "Spike", "Dra. Morales", "Programada"},
-        {"CT-002", "22/09/2026", "10:30", "Garfield", "Dr. López", "Confirmada"},
-        {"CT-003", "22/09/2026", "14:00", "Snoopy", "Dra. Morales", "Programada"},
-        {"CT-004", "23/09/2026", "08:30", "Pelusa", "Dr. López", "Cancelada"}
+    /*
+     * La tabla empieza vacía.
+     * cargarCitas() agregará los registros de MySQL.
+     */
+    modeloTabla = new DefaultTableModel(columnas, 0) {
+
+        @Override
+        public boolean isCellEditable(
+                int fila,
+                int columna) {
+
+            return false;
+        }
     };
 
-    // Evita que el usuario edite directamente las celdas
-    DefaultTableModel modelo= new DefaultTableModel(datosTemporales, columnas) {
-        @Override
-        public boolean isCellEditable(int fila, int columna) {
-            return false;
-            }
-        };
+        // La tabla debe crearse antes de configurarla.
+        tablaCitas = new JTable(modeloTabla);
 
-        // Crear la tabla
-        tablaCitas = new JTable(modelo);
+        /*
+         * Como existen varias columnas, se utiliza
+         * desplazamiento horizontal.
+         */
+        tablaCitas.setAutoResizeMode(
+            JTable.AUTO_RESIZE_OFF
+        );
 
-        // Apariencia general
         tablaCitas.setRowHeight(42);
         tablaCitas.setShowVerticalLines(false);
         tablaCitas.setShowHorizontalLines(true);
         tablaCitas.setGridColor(BORDE);
 
-        // Solo se podrá seleccionar una cita
-        tablaCitas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablaCitas.setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION
+        );
 
-        // Colores de selección
-        tablaCitas.setSelectionBackground(new Color(232, 242, 247));
-        tablaCitas.setSelectionForeground(new Color(36, 50, 61));
-        tablaCitas.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tablaCitas.setSelectionBackground(
+            new Color(232, 242, 247)
+        );
 
-        // Encabezado de la tabla
-        tablaCitas.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        tablaCitas.getTableHeader().setBackground(AZUL_OSCURO);
-        tablaCitas.getTableHeader().setForeground(Color.WHITE);
-        tablaCitas.getTableHeader().setPreferredSize(new Dimension(0, 42));
+        tablaCitas.setSelectionForeground(
+            new Color(36, 50, 61)
+        );
 
-        // La tabla ocupará todo el espacio disponible
+        tablaCitas.setFont(
+            new Font("Segoe UI", Font.PLAIN, 14)
+        );
+
+        // Apariencia del encabezado.
+        tablaCitas.getTableHeader().setFont(
+            new Font("Segoe UI", Font.BOLD, 14)
+        );
+
+        tablaCitas.getTableHeader().setBackground(
+            AZUL_OSCURO
+        );
+
+        tablaCitas.getTableHeader().setForeground(
+            Color.WHITE
+        );
+
+        tablaCitas.getTableHeader().setPreferredSize(
+            new Dimension(0, 42)
+        );
+
+        // Ancho de las columnas.
+        tablaCitas.getColumnModel()
+            .getColumn(0).setPreferredWidth(90);
+
+        tablaCitas.getColumnModel()
+            .getColumn(1).setPreferredWidth(100);
+
+        tablaCitas.getColumnModel()
+            .getColumn(2).setPreferredWidth(75);
+
+        tablaCitas.getColumnModel()
+            .getColumn(3).setPreferredWidth(120);
+
+        tablaCitas.getColumnModel()
+            .getColumn(4).setPreferredWidth(110);
+
+        tablaCitas.getColumnModel()
+            .getColumn(5).setPreferredWidth(180);
+
+        tablaCitas.getColumnModel()
+            .getColumn(6).setPreferredWidth(180);
+
+        tablaCitas.getColumnModel()
+            .getColumn(7).setPreferredWidth(220);
+
+        tablaCitas.getColumnModel()
+            .getColumn(8).setPreferredWidth(120);
+
         tablaCitas.setFillsViewportHeight(true);
 
-        // Agregar desplazamiento a la tabla
-        JScrollPane scroll= new JScrollPane(tablaCitas);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
+        JScrollPane scroll =
+            new JScrollPane(tablaCitas);
+
+        scroll.setBorder(
+            BorderFactory.createEmptyBorder()
+        );
 
         return scroll;
     }
+    /**
+     * Carga todas las citas registradas.
+     */
+    private void cargarCitas() {
+
+        List<Cita> citas =
+            citaDAO.listar();
+
+        mostrarCitas(citas);
+    }
+
+    /**
+     * Busca citas utilizando el contenido del buscador.
+     */
+    private void buscarCitas() {
+
+        String criterio =
+            txtBuscar.getText().trim();
+
+        if (criterio.isBlank()) {
+            cargarCitas();
+            return;
+        }
+
+        List<Cita> citas =
+            citaDAO.buscar(criterio);
+
+        mostrarCitas(citas);
+    }
+
+    /**
+     * Coloca una lista de citas dentro de la tabla.
+     */
+    private void mostrarCitas(List<Cita> citas) {
+
+        citasMostradas =
+            new ArrayList<>(citas);
+
+        modeloTabla.setRowCount(0);
+
+        for (Cita cita : citasMostradas) {
+
+            modeloTabla.addRow(new Object[] {
+                cita.getCodigoVisible(),
+
+                cita.getFechaHora().format(
+                    FORMATO_FECHA
+                ),
+
+                cita.getFechaHora().format(
+                    FORMATO_HORA
+                ),
+
+                cita.getNombreMascota(),
+                cita.getNumeroExpediente(),
+                cita.getNombrePropietario(),
+                cita.getNombreVeterinario(),
+                cita.getMotivo(),
+                obtenerTextoEstado(cita.getEstado())
+            });
+        }
+    }
+
+    /**
+     * Convierte el ENUM en un texto adecuado para la interfaz.
+     */
+    private String obtenerTextoEstado(
+            Cita.Estado estado) {
+
+        if (estado == null) {
+            return "Sin estado";
+        }
+
+        return switch (estado) {
+            case PROGRAMADA -> "Programada";
+            case CONFIRMADA -> "Confirmada";
+            case ATENDIDA -> "Atendida";
+            case CANCELADA -> "Cancelada";
+            case NO_ASISTIO -> "No asistió";
+        };
+    }
+    
+    /**
+    * Abre el diálogo para programar una cita nueva.
+    */
+   private void registrarCita() {
+
+       List<Mascota> mascotas =
+           mascotaDAO.listarActivas();
+
+       List<Veterinario> veterinarios =
+           veterinarioDAO.listarActivos();
+
+       if (mascotas.isEmpty()) {
+
+           JOptionPane.showMessageDialog(
+               this,
+               "Primero debes registrar una mascota.",
+               "No hay mascotas",
+               JOptionPane.WARNING_MESSAGE
+           );
+
+           return;
+       }
+
+       if (veterinarios.isEmpty()) {
+
+           JOptionPane.showMessageDialog(
+               this,
+               "No existen veterinarios activos.",
+               "No hay veterinarios",
+               JOptionPane.WARNING_MESSAGE
+           );
+
+           return;
+       }
+
+       DlgCita dialogo = new DlgCita(
+           SwingUtilities.getWindowAncestor(this),
+           null,
+           mascotas,
+           veterinarios
+       );
+
+       dialogo.setVisible(true);
+
+       if (!dialogo.isGuardado()) {
+           return;
+       }
+
+       Cita cita = dialogo.obtenerCita();
+
+       if (citaDAO.insertar(cita)) {
+
+           JOptionPane.showMessageDialog(
+               this,
+               "Cita programada correctamente.",
+               "Registro completado",
+               JOptionPane.INFORMATION_MESSAGE
+           );
+
+           cargarCitas();
+
+       } else {
+
+           mostrarErrorGuardado();
+       }
+   }
+
+    /**
+     * Modifica la cita seleccionada.
+     */
+    private void editarCita() {
+
+        Cita cita = obtenerCitaSeleccionada();
+
+        if (cita == null) {
+            return;
+        }
+
+        List<Mascota> mascotas =
+            mascotaDAO.listarActivas();
+
+        List<Veterinario> veterinarios =
+            veterinarioDAO.listarActivos();
+
+        if (mascotas.isEmpty()
+                || veterinarios.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Se necesitan mascotas y veterinarios activos.",
+                "Datos insuficientes",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        DlgCita dialogo = new DlgCita(
+            SwingUtilities.getWindowAncestor(this),
+            cita,
+            mascotas,
+            veterinarios
+        );
+
+        dialogo.setVisible(true);
+
+        if (!dialogo.isGuardado()) {
+            return;
+        }
+
+        Cita citaEditada =
+            dialogo.obtenerCita();
+
+        if (citaDAO.actualizar(citaEditada)) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cita actualizada correctamente.",
+                "Actualización completada",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarCitas();
+
+        } else {
+
+            mostrarErrorGuardado();
+        }
+    }
+
+    /**
+     * Cambia el estado de la cita a CANCELADA.
+     */
+    private void cancelarCita() {
+
+        Cita cita = obtenerCitaSeleccionada();
+
+        if (cita == null) {
+            return;
+        }
+
+        if (cita.getEstado()
+                == Cita.Estado.CANCELADA) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "La cita ya se encuentra cancelada.",
+                "Cita cancelada",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            return;
+        }
+
+        if (cita.getEstado()
+                == Cita.Estado.ATENDIDA) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Una cita atendida no puede cancelarse.",
+                "Operación no permitida",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        int respuesta =
+            JOptionPane.showConfirmDialog(
+                this,
+                "¿Deseas cancelar la cita "
+                + cita.getCodigoVisible()
+                + "?\n\n"
+                + cita.getNombreMascota()
+                + " - "
+                + cita.getNombreVeterinario(),
+                "Confirmar cancelación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+        if (respuesta != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        if (citaDAO.cambiarEstado(
+                cita.getIdCita(),
+                Cita.Estado.CANCELADA)) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Cita cancelada correctamente.",
+                "Operación completada",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarCitas();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No fue posible cancelar la cita.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Obtiene el objeto asociado a la fila seleccionada.
+     */
+    private Cita obtenerCitaSeleccionada() {
+
+        int filaSeleccionada =
+            tablaCitas.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Selecciona una cita en la tabla.",
+                "Ninguna cita seleccionada",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return null;
+        }
+
+        int filaModelo =
+            tablaCitas.convertRowIndexToModel(
+                filaSeleccionada
+            );
+
+        if (filaModelo < 0
+                || filaModelo >= citasMostradas.size()) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No fue posible identificar la cita.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+
+            return null;
+        }
+
+        return citasMostradas.get(filaModelo);
+    }
+
+    /**
+     * Informa que el horario puede encontrarse ocupado.
+     */
+    private void mostrarErrorGuardado() {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "No fue posible guardar la cita.\n\n"
+            + "Comprueba que el veterinario no tenga otra "
+            + "cita activa en la misma fecha y hora.",
+            "Horario no disponible",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
+
 }
