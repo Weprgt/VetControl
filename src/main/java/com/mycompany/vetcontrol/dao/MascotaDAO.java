@@ -31,7 +31,7 @@ public class MascotaDAO {
      */
     public boolean insertar(Mascota mascota) {
 
-        String sql = """
+        String sqlInsertar = """
             INSERT INTO mascotas (
                 id_cliente,
                 numero_expediente,
@@ -43,69 +43,154 @@ public class MascotaDAO {
                 color,
                 observaciones
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?)
             """;
 
-        try (
-            Connection conexion = ConexionBD.getConexion();
-            PreparedStatement sentencia = conexion.prepareStatement(
-                sql,
-                Statement.RETURN_GENERATED_KEYS
-            )
-        ) {
+        String sqlExpediente = """
+            UPDATE mascotas
+            SET numero_expediente = ?
+            WHERE id_mascota = ?
+            """;
 
-            sentencia.setInt(1, mascota.getIdCliente());
-            sentencia.setString(2, mascota.getNumeroExpediente());
-            sentencia.setString(3, mascota.getNombre());
-            sentencia.setString(4, mascota.getEspecie());
+        Connection conexion = null;
 
-            asignarTextoOpcional(sentencia, 5, mascota.getRaza());
+        try {
+            conexion = ConexionBD.getConexion();
+            conexion.setAutoCommit(false);
 
-            Sexo sexo = mascota.getSexo();
+            try (PreparedStatement sentencia =
+                    conexion.prepareStatement(
+                        sqlInsertar,
+                        Statement.RETURN_GENERATED_KEYS
+                    )) {
 
-            if (sexo == null) {
-                sentencia.setString(6, Sexo.DESCONOCIDO.name());
-            } else {
-                sentencia.setString(6, sexo.name());
-            }
+                sentencia.setInt(
+                    1,
+                    mascota.getIdCliente()
+                );
 
-            asignarFechaOpcional(
-                sentencia,
-                7,
-                mascota.getFechaNacimiento()
-            );
+                sentencia.setString(
+                    2,
+                    mascota.getNombre()
+                );
 
-            asignarTextoOpcional(sentencia, 8, mascota.getColor());
-            asignarTextoOpcional(
-                sentencia,
-                9,
-                mascota.getObservaciones()
-            );
+                sentencia.setString(
+                    3,
+                    mascota.getEspecie()
+                );
 
-            int filasAfectadas = sentencia.executeUpdate();
+                asignarTextoOpcional(
+                    sentencia,
+                    4,
+                    mascota.getRaza()
+                );
 
-            /*
-             * Recuperamos el id_mascota generado automáticamente
-             * y lo colocamos dentro del objeto.
-             */
-            if (filasAfectadas > 0) {
-                try (ResultSet claves = sentencia.getGeneratedKeys()) {
-                    if (claves.next()) {
-                        mascota.setIdMascota(claves.getInt(1));
-                    }
+                Sexo sexo = mascota.getSexo();
+
+                sentencia.setString(
+                    5,
+                    sexo == null
+                        ? Sexo.DESCONOCIDO.name()
+                        : sexo.name()
+                );
+
+                asignarFechaOpcional(
+                    sentencia,
+                    6,
+                    mascota.getFechaNacimiento()
+                );
+
+                asignarTextoOpcional(
+                    sentencia,
+                    7,
+                    mascota.getColor()
+                );
+
+                asignarTextoOpcional(
+                    sentencia,
+                    8,
+                    mascota.getObservaciones()
+                );
+
+                if (sentencia.executeUpdate() == 0) {
+                    conexion.rollback();
+                    return false;
                 }
 
-                return true;
+                try (ResultSet claves =
+                        sentencia.getGeneratedKeys()) {
+
+                    if (!claves.next()) {
+                        conexion.rollback();
+                        return false;
+                    }
+
+                    mascota.setIdMascota(
+                        claves.getInt(1)
+                    );
+                }
             }
 
+            String expediente = String.format(
+                "EXP-%04d",
+                mascota.getIdMascota()
+            );
+
+            try (PreparedStatement sentencia =
+                    conexion.prepareStatement(
+                        sqlExpediente
+                    )) {
+
+                sentencia.setString(1, expediente);
+                sentencia.setInt(
+                    2,
+                    mascota.getIdMascota()
+                );
+
+                if (sentencia.executeUpdate() == 0) {
+                    conexion.rollback();
+                    return false;
+                }
+            }
+
+            mascota.setNumeroExpediente(expediente);
+
+            conexion.commit();
+            return true;
+
         } catch (SQLException error) {
+
+            if (conexion != null) {
+                try {
+                    conexion.rollback();
+                } catch (SQLException errorRollback) {
+                    System.err.println(
+                        "Error al revertir la operación: "
+                        + errorRollback.getMessage()
+                    );
+                }
+            }
+
             System.err.println(
                 "Error al insertar la mascota: "
                 + error.getMessage()
             );
-        }
 
-        return false;
+            return false;
+
+        } finally {
+
+            if (conexion != null) {
+                try {
+                    conexion.close();
+                } catch (SQLException error) {
+                    System.err.println(
+                        "Error al cerrar la conexión: "
+                        + error.getMessage()
+                    );
+                }
+            }
+        }
     }
 
     /**
