@@ -33,6 +33,7 @@ public class Usuario {
     public Usuario() {
         this.activo = true;
     }
+    
 
     /**
      * Constructor para registrar un usuario nuevo.

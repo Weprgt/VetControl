@@ -21,6 +21,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import com.mycompany.vetcontrol.modelo.Usuario;
+import java.sql.SQLException;
 
 /**
  *
@@ -45,7 +46,7 @@ public class FrmPrincipal extends JFrame{
     private final Usuario usuarioActual;
     
     // Constructor
-    public FrmPrincipal(Usuario usuarioActual) {
+    public FrmPrincipal(Usuario usuarioActual) throws SQLException {
         this.usuarioActual = usuarioActual;
 
         configurarVentana();
@@ -61,7 +62,7 @@ public class FrmPrincipal extends JFrame{
         setLocationRelativeTo(null);
     }
     
-    private void crearInterfaz() {
+    private void crearInterfaz() throws SQLException {
         getContentPane().setLayout(new BorderLayout());
         getContentPane().setBackground(FONDO);
         
@@ -208,7 +209,7 @@ public class FrmPrincipal extends JFrame{
         
     }
     
-    private JPanel crearPanelContenido() {
+    private JPanel crearPanelContenido() throws SQLException {
         cardLayout= new CardLayout();
         
         JPanel contenedor= new JPanel(cardLayout);

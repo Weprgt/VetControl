@@ -25,8 +25,8 @@ public class VetControl {
         UIManager.put("ScrollBar.width", 12); // Scrollbars con ancho a 12 pixeles
         
         SwingUtilities.invokeLater(() -> {
-            FrmPrincipal ventana= new FrmPrincipal();
-            //FrmLogin ventana= new FrmLogin();
+            //FrmPrincipal ventana= new FrmPrincipal();
+            FrmLogin ventana= new FrmLogin();
             ventana.setVisible(true);
         });
     }

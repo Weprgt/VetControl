@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.sql.SQLException;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -191,7 +192,13 @@ public class FrmLogin extends JFrame {
         btnIniciarSesion.setMaximumSize(tamanoBoton);
         btnIniciarSesion.setAlignmentX(LEFT_ALIGNMENT);
         btnIniciarSesion.putClientProperty("JButton.buttonType", "borderless");
-        btnIniciarSesion.addActionListener(evento -> iniciarSesion());
+        btnIniciarSesion.addActionListener(evento -> {
+            try {
+                iniciarSesion();
+            } catch (SQLException ex) {
+                System.getLogger(FrmLogin.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            }
+        });
         getRootPane().setDefaultButton(btnIniciarSesion);
         tarjetaLogin.add(btnIniciarSesion);
         tarjetaLogin.add(Box.createVerticalStrut(30));
@@ -200,7 +207,7 @@ public class FrmLogin extends JFrame {
         
         return panelFormulario;       
     }
-    private void iniciarSesion() {
+    private void iniciarSesion() throws SQLException {
 
     String nombreUsuario =
         txtUsuario.getText().trim();
