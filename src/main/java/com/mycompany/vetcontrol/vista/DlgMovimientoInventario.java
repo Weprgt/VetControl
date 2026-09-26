@@ -291,7 +291,10 @@ public class DlgMovimientoInventario extends JDialog {
         JPanel panel = new JPanel();
 
         panel.setLayout(
-            new BoxLayout(panel, BoxLayout.X_AXIS)
+            new BoxLayout(
+                panel,
+                BoxLayout.X_AXIS
+            )
         );
 
         panel.setOpaque(false);
@@ -308,17 +311,22 @@ public class DlgMovimientoInventario extends JDialog {
                 AZUL_PRINCIPAL
             );
 
+        // Cierra el diálogo sin guardar.
         btnCancelar.addActionListener(
             evento -> dispose()
         );
 
+        // Valida los datos antes de cerrar.
         btnRegistrar.addActionListener(
             evento -> confirmarFormulario()
         );
 
         panel.add(Box.createHorizontalGlue());
         panel.add(btnCancelar);
-        panel.add(Box.createHorizontalStrut(10));
+        panel.add(
+            Box.createHorizontalStrut(10)
+        );
+
         panel.add(btnRegistrar);
 
         return panel;

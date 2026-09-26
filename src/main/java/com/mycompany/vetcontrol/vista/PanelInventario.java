@@ -4,8 +4,11 @@
  */
 package com.mycompany.vetcontrol.vista;
 
+import com.mycompany.vetcontrol.dao.MovimientosInventarioDAO;
 import com.mycompany.vetcontrol.dao.ProductoDAO;
+import com.mycompany.vetcontrol.modelo.MovimientoInventario;
 import com.mycompany.vetcontrol.modelo.Producto;
+import com.mycompany.vetcontrol.modelo.Usuario;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,9 +58,13 @@ public class PanelInventario extends JPanel {
     private static final Color BORDE= new Color(216, 225, 232);
     private static final Color AZUL_SELECCION= new Color(232, 242, 247);
     private static final Color FONDO_ALERTA= new Color(255, 247, 230);
+    private static final Color GRIS_BOTON= new Color(98, 114, 125);
 
     private JTable tablaInventario;
     private JTextField txtBuscar;
+    
+    private final Usuario usuarioActual;
+    private final MovimientosInventarioDAO movimientoDAO;
     
     // DAO para consultar los productos de MySQL.
     private final ProductoDAO productoDAO;
@@ -73,15 +80,22 @@ public class PanelInventario extends JPanel {
     private JButton btnBuscar;
     private JButton btnNuevo;
     private JButton btnMovimiento;
+    private JButton btnHistorial;
     private JLabel lblAlerta;
 
     // Formato de vencimiento.
     private static final DateTimeFormatter FORMATO_FECHA =
     DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public PanelInventario() {
+    public PanelInventario(
+        Usuario usuarioActual) {
+
+        this.usuarioActual = usuarioActual;
 
         productoDAO = new ProductoDAO();
+
+        movimientoDAO =
+            new MovimientosInventarioDAO();
 
         crearInterfaz();
         cargarProductos();
@@ -208,14 +222,35 @@ public class PanelInventario extends JPanel {
             NARANJA,
             120
         );
+        
+        btnHistorial = crearBoton(
+            "Ver movimientos",
+            GRIS_BOTON,
+            145
+        );
 
         // Eventos.
         btnBuscar.addActionListener(
             evento -> buscarProductos()
         );
+        
 
         btnNuevo.addActionListener(
             evento -> abrirNuevoProducto()
+        );
+        
+        btnMovimiento.addActionListener(
+            evento -> {
+                System.out.println(
+                    "Botón Movimiento presionado"
+                );
+
+                abrirMovimiento();
+            }
+        );
+        
+        btnHistorial.addActionListener(
+            evento -> abrirHistorialMovimientos()
         );
 
         // Agregar botones.
@@ -230,6 +265,12 @@ public class PanelInventario extends JPanel {
         );
 
         panelBotones.add(btnMovimiento);
+        
+        panelBotones.add(
+            Box.createHorizontalStrut(10)
+        );
+
+        panelBotones.add(btnHistorial);
 
         return panelBotones;
     }
@@ -636,4 +677,95 @@ public class PanelInventario extends JPanel {
             );
         }
     }
+    private void abrirMovimiento() {
+
+        List<Producto> productos =
+            productoDAO.listarActivos();
+
+        if (productos.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No existen productos activos.",
+                "Inventario",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        Producto productoSeleccionado = null;
+
+        int fila =
+            tablaInventario.getSelectedRow();
+
+        if (fila >= 0
+                && fila < productosMostrados.size()) {
+
+            productoSeleccionado =
+                productosMostrados.get(fila);
+        }
+
+        Window ventana =
+            SwingUtilities.getWindowAncestor(this);
+
+        DlgMovimientoInventario dialogo =
+            new DlgMovimientoInventario(
+                ventana,
+                productos,
+                productoSeleccionado,
+                usuarioActual.getIdUsuario()
+            );
+
+        dialogo.setVisible(true);
+
+        if (!dialogo.isGuardado()) {
+            return;
+        }
+
+        MovimientoInventario movimiento =
+            dialogo.obtenerMovimiento();
+
+        if (movimientoDAO.registrar(movimiento)) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "El movimiento fue registrado correctamente.",
+                "Inventario",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarProductos();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                this,
+                "No fue posible registrar el movimiento.\n"
+                + "Comprueba las existencias disponibles.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+    /**
+    * Muestra todos los movimientos registrados,
+    * comenzando por el más reciente.
+    */
+   private void abrirHistorialMovimientos() {
+
+       List<MovimientoInventario> movimientos =
+           movimientoDAO.listar();
+
+       Window ventana =
+           SwingUtilities.getWindowAncestor(this);
+
+       DlgHistorialMovimientos dialogo =
+           new DlgHistorialMovimientos(
+               ventana,
+               movimientos
+           );
+
+       dialogo.setVisible(true);
+   }
 }

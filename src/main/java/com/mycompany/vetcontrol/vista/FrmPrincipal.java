@@ -218,7 +218,7 @@ public class FrmPrincipal extends JFrame{
         contenedor.add(new PanelMascotas(), "MASCOTAS");
         contenedor.add(new PanelCitas(), "CITAS");
         contenedor.add(new PanelHistorialClinico(), "HISTORIAL");
-        contenedor.add(new PanelInventario(), "INVENTARIO");
+        contenedor.add(new PanelInventario(usuarioActual), "INVENTARIO");
         
         return contenedor;
     }
