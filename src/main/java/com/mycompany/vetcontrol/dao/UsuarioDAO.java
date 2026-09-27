@@ -134,66 +134,154 @@ public class UsuarioDAO {
 
         return usuarios;
     }
+    
+    /**
+    * Obtiene todas las cuentas, tanto activas
+    * como inactivas, junto con su rol.
+    */
+   public List<Usuario> listarTodos() {
+
+       List<Usuario> usuarios =
+           new ArrayList<>();
+
+       String sql = """
+           SELECT
+               u.id_usuario,
+               u.id_rol,
+               u.nombre_completo,
+               u.nombre_usuario,
+               u.contrasena_hash,
+               u.correo,
+               u.activo,
+               u.fecha_creacion,
+               r.nombre AS nombre_rol
+           FROM usuarios u
+           INNER JOIN roles r
+               ON r.id_rol = u.id_rol
+           ORDER BY
+               u.activo DESC,
+               u.nombre_completo
+           """;
+
+       try (
+           Connection conexion =
+               ConexionBD.getConexion();
+
+           PreparedStatement sentencia =
+               conexion.prepareStatement(sql);
+
+           ResultSet resultado =
+               sentencia.executeQuery()
+       ) {
+
+           while (resultado.next()) {
+
+               usuarios.add(
+                   convertirUsuario(resultado)
+               );
+           }
+
+       } catch (SQLException error) {
+
+           System.err.println(
+               "Error al listar todos los usuarios: "
+               + error.getMessage()
+           );
+       }
+
+       return usuarios;
+   }
 
     /**
-     * Busca usuarios por nombre, nombre de usuario,
-     * correo o nombre del rol.
-     */
-    public List<Usuario> buscar(String texto) {
+    * Busca usuarios activos e inactivos por nombre,
+    * usuario, correo, rol o estado.
+    */
+   public List<Usuario> buscar(String texto) {
 
-        List<Usuario> usuarios = new ArrayList<>();
+       List<Usuario> usuarios =
+           new ArrayList<>();
 
-        String sql = """
-            SELECT
-                u.id_usuario,
-                u.id_rol,
-                u.nombre_completo,
-                u.nombre_usuario,
-                u.contrasena_hash,
-                u.correo,
-                u.activo,
-                u.fecha_creacion,
-                r.nombre AS nombre_rol
-            FROM usuarios u
-            INNER JOIN roles r
-                ON r.id_rol = u.id_rol
-            WHERE u.activo = 1
-              AND (
-                    u.nombre_completo LIKE ?
-                 OR u.nombre_usuario LIKE ?
-                 OR u.correo LIKE ?
-                 OR r.nombre LIKE ?
-              )
-            ORDER BY u.nombre_completo
-            """;
+       String sql = """
+           SELECT
+               u.id_usuario,
+               u.id_rol,
+               u.nombre_completo,
+               u.nombre_usuario,
+               u.contrasena_hash,
+               u.correo,
+               u.activo,
+               u.fecha_creacion,
+               r.nombre AS nombre_rol
+           FROM usuarios u
+           INNER JOIN roles r
+               ON r.id_rol = u.id_rol
+           WHERE
+                  u.nombre_completo LIKE ?
+               OR u.nombre_usuario LIKE ?
+               OR u.correo LIKE ?
+               OR r.nombre LIKE ?
+               OR (
+                   ? = 'ACTIVO'
+                   AND u.activo = 1
+               )
+               OR (
+                   ? = 'INACTIVO'
+                   AND u.activo = 0
+               )
+           ORDER BY
+               u.activo DESC,
+               u.nombre_completo
+           """;
 
-        String criterio = "%" + texto.trim() + "%";
+       String textoLimpio =
+           texto == null
+               ? ""
+               : texto.trim();
 
-        try (
-            Connection conexion = ConexionBD.getConexion();
-            PreparedStatement sentencia =
-                conexion.prepareStatement(sql)
-        ) {
+       String criterio =
+           "%" + textoLimpio + "%";
 
-            for (int posicion = 1; posicion <= 4; posicion++) {
-                sentencia.setString(posicion, criterio);
-            }
+       String estado =
+           textoLimpio.toUpperCase();
 
-            try (ResultSet resultado = sentencia.executeQuery()) {
-                while (resultado.next()) {
-                    usuarios.add(convertirUsuario(resultado));
-                }
-            }
+       try (
+           Connection conexion =
+               ConexionBD.getConexion();
 
-        } catch (SQLException error) {
-            System.err.println(
-                "Error al buscar usuarios: "
-                + error.getMessage()
-            );
-        }
+           PreparedStatement sentencia =
+               conexion.prepareStatement(sql)
+       ) {
 
-        return usuarios;
-    }
+           sentencia.setString(1, criterio);
+           sentencia.setString(2, criterio);
+           sentencia.setString(3, criterio);
+           sentencia.setString(4, criterio);
+           sentencia.setString(5, estado);
+           sentencia.setString(6, estado);
+
+           try (
+               ResultSet resultado =
+                   sentencia.executeQuery()
+           ) {
+
+               while (resultado.next()) {
+
+                   usuarios.add(
+                       convertirUsuario(resultado)
+                   );
+               }
+           }
+
+       } catch (SQLException error) {
+
+           System.err.println(
+               "Error al buscar usuarios: "
+               + error.getMessage()
+           );
+       }
+
+       return usuarios;
+   }
 
     /**
      * Busca un usuario mediante su nombre de usuario.
@@ -373,6 +461,41 @@ public class UsuarioDAO {
 
         return false;
     }
+    
+    /**
+    * Reactiva una cuenta que había sido desactivada.
+    */
+   public boolean reactivar(int idUsuario) {
+
+       String sql = """
+           UPDATE usuarios
+           SET activo = 1
+           WHERE id_usuario = ?
+             AND activo = 0
+           """;
+
+       try (
+           Connection conexion =
+               ConexionBD.getConexion();
+
+           PreparedStatement sentencia =
+               conexion.prepareStatement(sql)
+       ) {
+
+           sentencia.setInt(1, idUsuario);
+
+           return sentencia.executeUpdate() > 0;
+
+       } catch (SQLException error) {
+
+           System.err.println(
+               "Error al reactivar el usuario: "
+               + error.getMessage()
+           );
+       }
+
+       return false;
+   }
 
     /**
      * Convierte una fila de MySQL en un objeto Usuario.
@@ -442,4 +565,6 @@ public class UsuarioDAO {
             );
         }
     }
+    
+    
 }

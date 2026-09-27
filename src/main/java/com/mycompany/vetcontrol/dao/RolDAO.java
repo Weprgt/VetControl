@@ -21,11 +21,6 @@ public class RolDAO {
 
     /**
      * Obtiene todos los roles registrados.
-     *
-     * Este método servirá para llenar un JComboBox cuando
-     * construyamos la pantalla de administración de usuarios.
-     *
-     * @return lista de roles
      */
     public List<Rol> listar() {
 
@@ -41,17 +36,29 @@ public class RolDAO {
             """;
 
         try (
-            Connection conexion = ConexionBD.getConexion();
+            Connection conexion =
+                ConexionBD.getConexion();
+
             PreparedStatement sentencia =
                 conexion.prepareStatement(sql);
-            ResultSet resultado = sentencia.executeQuery()
+
+            ResultSet resultado =
+                sentencia.executeQuery()
         ) {
 
             while (resultado.next()) {
-                roles.add(convertirRol(resultado));
+
+                Rol rol = new Rol(
+                    resultado.getInt("id_rol"),
+                    resultado.getString("nombre"),
+                    resultado.getString("descripcion")
+                );
+
+                roles.add(rol);
             }
 
         } catch (SQLException error) {
+
             System.err.println(
                 "Error al listar los roles: "
                 + error.getMessage()
@@ -59,106 +66,5 @@ public class RolDAO {
         }
 
         return roles;
-    }
-
-    /**
-     * Busca un rol utilizando su identificador.
-     *
-     * @param idRol identificador del rol
-     * @return rol encontrado o null si no existe
-     */
-    public Rol buscarPorId(int idRol) {
-
-        String sql = """
-            SELECT
-                id_rol,
-                nombre,
-                descripcion
-            FROM roles
-            WHERE id_rol = ?
-            """;
-
-        try (
-            Connection conexion = ConexionBD.getConexion();
-            PreparedStatement sentencia =
-                conexion.prepareStatement(sql)
-        ) {
-
-            sentencia.setInt(1, idRol);
-
-            try (ResultSet resultado = sentencia.executeQuery()) {
-                if (resultado.next()) {
-                    return convertirRol(resultado);
-                }
-            }
-
-        } catch (SQLException error) {
-            System.err.println(
-                "Error al buscar el rol por ID: "
-                + error.getMessage()
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * Busca un rol mediante su nombre.
-     *
-     * Ejemplo:
-     * buscarPorNombre("VETERINARIO")
-     *
-     * @param nombre nombre del rol
-     * @return rol encontrado o null si no existe
-     */
-    public Rol buscarPorNombre(String nombre) {
-
-        String sql = """
-            SELECT
-                id_rol,
-                nombre,
-                descripcion
-            FROM roles
-            WHERE nombre = ?
-            """;
-
-        try (
-            Connection conexion = ConexionBD.getConexion();
-            PreparedStatement sentencia =
-                conexion.prepareStatement(sql)
-        ) {
-
-            sentencia.setString(
-                1,
-                nombre.trim().toUpperCase()
-            );
-
-            try (ResultSet resultado = sentencia.executeQuery()) {
-                if (resultado.next()) {
-                    return convertirRol(resultado);
-                }
-            }
-
-        } catch (SQLException error) {
-            System.err.println(
-                "Error al buscar el rol por nombre: "
-                + error.getMessage()
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * Convierte una fila obtenida de MySQL en un objeto Rol.
-     */
-    private Rol convertirRol(ResultSet resultado)
-            throws SQLException {
-
-        return new Rol(
-            resultado.getInt("id_rol"),
-            resultado.getString("nombre"),
-            resultado.getString("descripcion")
-        );
     }
 }

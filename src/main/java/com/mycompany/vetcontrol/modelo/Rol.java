@@ -10,25 +10,18 @@ package com.mycompany.vetcontrol.modelo;
  */
 public class Rol {
 
-    // Identificador generado por MySQL.
     private int idRol;
-
-    // Ejemplos: ADMINISTRADOR, VETERINARIO y RECEPCIONISTA.
     private String nombre;
-
-    // Explicación general de las funciones del rol.
     private String descripcion;
 
-    /**
-     * Constructor vacío.
-     */
     public Rol() {
     }
 
-    /**
-     * Constructor utilizado al recuperar un rol de la base de datos.
-     */
-    public Rol(int idRol, String nombre, String descripcion) {
+    public Rol(
+            int idRol,
+            String nombre,
+            String descripcion) {
+
         this.idRol = idRol;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -59,8 +52,8 @@ public class Rol {
     }
 
     /**
-     * Permite mostrar directamente el nombre del rol
-     * dentro de componentes como JComboBox.
+     * Permite que el JComboBox muestre el nombre
+     * en lugar de la dirección del objeto.
      */
     @Override
     public String toString() {

@@ -234,6 +234,20 @@ public class FrmPrincipal extends JFrame{
                 )
             );
         }
+        
+        if (tieneAcceso("USUARIOS")) {
+
+        menuLateral.add(
+            Box.createVerticalStrut(5)
+        );
+
+        menuLateral.add(
+            crearBotonMenu(
+                "Usuarios",
+                "USUARIOS"
+            )
+        );
+    }
 
         seleccionarBoton(btnInicio);
 
@@ -331,6 +345,13 @@ public class FrmPrincipal extends JFrame{
                 "INVENTARIO"
             );
         }
+        
+        if (tieneAcceso("USUARIOS")) {
+            contenedor.add(
+                new PanelUsuarios(usuarioActual),
+                "USUARIOS"
+            );
+        }
 
         return contenedor;
     }
@@ -340,20 +361,21 @@ public class FrmPrincipal extends JFrame{
     }
     
     /**
-    * Determina si el usuario autenticado puede acceder
-    * a una pantalla concreta.
+    * Determina qué pantallas puede utilizar cada rol.
     */
    private boolean tieneAcceso(String pantalla) {
 
-       String rol = usuarioActual.getNombreRol();
+       String rol =
+           usuarioActual.getNombreRol();
 
        if (rol == null) {
-           return pantalla.equals("INICIO");
+           return "INICIO".equals(pantalla);
        }
 
        return switch (rol.toUpperCase()) {
 
-           case "ADMINISTRADOR" -> true;
+           case "ADMINISTRADOR" ->
+               true;
 
            case "RECEPCIONISTA" ->
                pantalla.equals("INICIO")

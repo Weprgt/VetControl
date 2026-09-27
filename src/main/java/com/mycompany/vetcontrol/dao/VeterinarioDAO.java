@@ -449,4 +449,116 @@ public class VeterinarioDAO {
             );
         }
     }
+    
+    /**
+    * Crea, actualiza o reactiva los datos profesionales
+    * asociados a un usuario.
+    *
+    * Primero intenta actualizar el registro existente.
+    * Si todavía no existe, registra uno nuevo.
+    */
+   public boolean guardarPorUsuario(
+           Veterinario veterinario) {
+
+       String sqlActualizar = """
+           UPDATE veterinarios
+           SET
+               especialidad = ?,
+               telefono_profesional = ?,
+               activo = 1
+           WHERE id_usuario = ?
+           """;
+
+       try (
+           Connection conexion =
+               ConexionBD.getConexion();
+
+           PreparedStatement sentencia =
+               conexion.prepareStatement(
+                   sqlActualizar
+               )
+       ) {
+
+           asignarTextoOpcional(
+               sentencia,
+               1,
+               veterinario.getEspecialidad()
+           );
+
+           asignarTextoOpcional(
+               sentencia,
+               2,
+               veterinario.getTelefonoProfesional()
+           );
+
+           sentencia.setInt(
+               3,
+               veterinario.getIdUsuario()
+           );
+
+           int filasActualizadas =
+               sentencia.executeUpdate();
+
+           /*
+            * Si el usuario ya tenía registro profesional,
+            * fue actualizado o reactivado correctamente.
+            */
+           if (filasActualizadas > 0) {
+               return true;
+           }
+
+       } catch (SQLException error) {
+
+           System.err.println(
+               "Error al actualizar los datos profesionales: "
+               + error.getMessage()
+           );
+
+           return false;
+       }
+
+       /*
+        * Si no existía un registro profesional,
+        * utiliza el método insertar que ya teníamos.
+        */
+       return insertar(veterinario);
+   }
+   
+   /**
+    * Activa o desactiva el registro profesional
+    * relacionado con una cuenta de usuario.
+    */
+   public boolean cambiarEstadoPorUsuario(
+           int idUsuario,
+           boolean activo) {
+
+       String sql = """
+           UPDATE veterinarios
+           SET activo = ?
+           WHERE id_usuario = ?
+           """;
+
+       try (
+           Connection conexion =
+               ConexionBD.getConexion();
+
+           PreparedStatement sentencia =
+               conexion.prepareStatement(sql)
+       ) {
+
+           sentencia.setBoolean(1, activo);
+           sentencia.setInt(2, idUsuario);
+
+           return sentencia.executeUpdate() > 0;
+
+       } catch (SQLException error) {
+
+           System.err.println(
+               "Error al cambiar el estado del veterinario: "
+               + error.getMessage()
+           );
+       }
+
+       return false;
+   }
 }
