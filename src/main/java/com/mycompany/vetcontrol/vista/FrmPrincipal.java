@@ -118,47 +118,126 @@ public class FrmPrincipal extends JFrame{
     }
     
     private JPanel crearMenuLateral() {
-        JPanel menuLateral= new JPanel();
-        
+
+        JPanel menuLateral = new JPanel();
+
         menuLateral.setLayout(
             new BoxLayout(
                 menuLateral,
-                BoxLayout.Y_AXIS));
-        
+                BoxLayout.Y_AXIS
+            )
+        );
+
         menuLateral.setBackground(Color.WHITE);
-        menuLateral.setPreferredSize(new Dimension(230, 0));
-        menuLateral.setBorder(new EmptyBorder(25, 18, 20, 18));
-        
-        JLabel lblNavegacion= new JLabel("NAVEGACIÓN");
-        lblNavegacion.setForeground(new Color(98, 114, 125));
-        lblNavegacion.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblNavegacion.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+        menuLateral.setPreferredSize(
+            new Dimension(230, 0)
+        );
+
+        menuLateral.setBorder(
+            new EmptyBorder(25, 18, 20, 18)
+        );
+
+        JLabel lblNavegacion =
+            new JLabel("NAVEGACIÓN");
+
+        lblNavegacion.setForeground(
+            new Color(98, 114, 125)
+        );
+
+        lblNavegacion.setFont(
+            new Font("Segoe UI", Font.BOLD, 12)
+        );
+
+        lblNavegacion.setAlignmentX(
+            Component.LEFT_ALIGNMENT
+        );
+
         menuLateral.add(lblNavegacion);
-        menuLateral.add(Box.createVerticalStrut(18));
-        
-        JButton btnInicio= crearBotonMenu("Inicio", "INICIO");
+        menuLateral.add(
+            Box.createVerticalStrut(18)
+        );
+
+        // Inicio está disponible para todos.
+        JButton btnInicio =
+            crearBotonMenu(
+                "Inicio",
+                "INICIO"
+            );
+
         menuLateral.add(btnInicio);
-        menuLateral.add(Box.createVerticalStrut(5));
-        
-        menuLateral.add(crearBotonMenu("Clientes", "CLIENTES"));
-        menuLateral.add(Box.createVerticalStrut(5));
-        
-        menuLateral.add(crearBotonMenu("Mascotas", "MASCOTAS"));
-        menuLateral.add(Box.createVerticalStrut(5));
-        
-        menuLateral.add(crearBotonMenu("Citas", "CITAS"));
-        menuLateral.add(Box.createVerticalStrut(5));
-        
-        menuLateral.add(crearBotonMenu("Historial Clínico", "HISTORIAL"));
-        menuLateral.add(Box.createVerticalStrut(5));
-       
-        menuLateral.add(crearBotonMenu("Inventario", "INVENTARIO"));
-        
+        menuLateral.add(
+            Box.createVerticalStrut(5)
+        );
+
+        if (tieneAcceso("CLIENTES")) {
+
+            menuLateral.add(
+                crearBotonMenu(
+                    "Clientes",
+                    "CLIENTES"
+                )
+            );
+
+            menuLateral.add(
+                Box.createVerticalStrut(5)
+            );
+        }
+
+        if (tieneAcceso("MASCOTAS")) {
+
+            menuLateral.add(
+                crearBotonMenu(
+                    "Mascotas",
+                    "MASCOTAS"
+                )
+            );
+
+            menuLateral.add(
+                Box.createVerticalStrut(5)
+            );
+        }
+
+        if (tieneAcceso("CITAS")) {
+
+            menuLateral.add(
+                crearBotonMenu(
+                    "Citas",
+                    "CITAS"
+                )
+            );
+
+            menuLateral.add(
+                Box.createVerticalStrut(5)
+            );
+        }
+
+        if (tieneAcceso("HISTORIAL")) {
+
+            menuLateral.add(
+                crearBotonMenu(
+                    "Historial Clínico",
+                    "HISTORIAL"
+                )
+            );
+
+            menuLateral.add(
+                Box.createVerticalStrut(5)
+            );
+        }
+
+        if (tieneAcceso("INVENTARIO")) {
+
+            menuLateral.add(
+                crearBotonMenu(
+                    "Inventario",
+                    "INVENTARIO"
+                )
+            );
+        }
+
         seleccionarBoton(btnInicio);
-        
+
         return menuLateral;
-        
     }
     
     private JButton crearBotonMenu(String texto, String pantalla) {
@@ -174,16 +253,12 @@ public class FrmPrincipal extends JFrame{
         boton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         boton.putClientProperty("JButton.buttonType", "borderless");
         
-        boton.addActionListener(evento->{
-           if(pantalla.equals("INICIO")
-                || pantalla.equals("CLIENTES")
-                || pantalla.equals("MASCOTAS")
-                || pantalla.equals("CITAS")
-                || pantalla.equals("HISTORIAL")
-                || pantalla.equals("INVENTARIO")){
-               seleccionarBoton(boton);
-               mostrarPantalla(pantalla);
-           }
+        boton.addActionListener(evento -> {
+
+            if (tieneAcceso(pantalla)) {
+                seleccionarBoton(boton);
+                mostrarPantalla(pantalla);
+            }
         });
         
         return boton;
@@ -209,21 +284,91 @@ public class FrmPrincipal extends JFrame{
         
     }
     
-    private JPanel crearPanelContenido() throws SQLException {
-        cardLayout= new CardLayout();
-        
-        JPanel contenedor= new JPanel(cardLayout);
-        contenedor.add(new PanelInicio(), "INICIO");
-        contenedor.add(new PanelClientes(), "CLIENTES");
-        contenedor.add(new PanelMascotas(), "MASCOTAS");
-        contenedor.add(new PanelCitas(), "CITAS");
-        contenedor.add(new PanelHistorialClinico(), "HISTORIAL");
-        contenedor.add(new PanelInventario(usuarioActual), "INVENTARIO");
-        
+    private JPanel crearPanelContenido()
+        throws SQLException {
+
+        cardLayout = new CardLayout();
+
+        JPanel contenedor =
+            new JPanel(cardLayout);
+
+        contenedor.add(
+            new PanelInicio(),
+            "INICIO"
+        );
+
+        if (tieneAcceso("CLIENTES")) {
+            contenedor.add(
+                new PanelClientes(),
+                "CLIENTES"
+            );
+        }
+
+        if (tieneAcceso("MASCOTAS")) {
+            contenedor.add(
+                new PanelMascotas(),
+                "MASCOTAS"
+            );
+        }
+
+        if (tieneAcceso("CITAS")) {
+            contenedor.add(
+                new PanelCitas(),
+                "CITAS"
+            );
+        }
+
+        if (tieneAcceso("HISTORIAL")) {
+            contenedor.add(
+                new PanelHistorialClinico(),
+                "HISTORIAL"
+            );
+        }
+
+        if (tieneAcceso("INVENTARIO")) {
+            contenedor.add(
+                new PanelInventario(usuarioActual),
+                "INVENTARIO"
+            );
+        }
+
         return contenedor;
     }
     
     private void mostrarPantalla(String pantalla) {
         cardLayout.show(panelContenido, pantalla);
     }
+    
+    /**
+    * Determina si el usuario autenticado puede acceder
+    * a una pantalla concreta.
+    */
+   private boolean tieneAcceso(String pantalla) {
+
+       String rol = usuarioActual.getNombreRol();
+
+       if (rol == null) {
+           return pantalla.equals("INICIO");
+       }
+
+       return switch (rol.toUpperCase()) {
+
+           case "ADMINISTRADOR" -> true;
+
+           case "RECEPCIONISTA" ->
+               pantalla.equals("INICIO")
+               || pantalla.equals("CLIENTES")
+               || pantalla.equals("MASCOTAS")
+               || pantalla.equals("CITAS");
+
+           case "VETERINARIO" ->
+               pantalla.equals("INICIO")
+               || pantalla.equals("MASCOTAS")
+               || pantalla.equals("CITAS")
+               || pantalla.equals("HISTORIAL");
+
+           default ->
+               pantalla.equals("INICIO");
+       };
+   }
 }
