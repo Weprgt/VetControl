@@ -100,48 +100,101 @@ src/main/java/com/mycompany/vetcontrol/
 
 ## Instalación
 
-1. Clona el repositorio:
+### 1. Clonar el repositorio
 
-   ```bash
-   git clone URL_DEL_REPOSITORIO
-   cd VetControl
-   ```
+```bash
+git clone URL_DEL_REPOSITORIO
+cd VetControl
+```
 
-2. Crea la base de datos `vetcontrol` e importa el script SQL del proyecto.
+Sustituye `URL_DEL_REPOSITORIO` por la dirección real del repositorio en GitHub.
 
-3. Copia el archivo de ejemplo:
+### 2. Crear la base de datos
 
-   ```text
-   src/main/resources/config.properties.example
-   ```
+El proyecto incluye dos scripts dentro de la carpeta `database`:
 
-   y crea localmente:
+```text
+database/
+├── 01-esquema.sql
+└── 02-datos-demo.sql
+```
 
-   ```text
-   src/main/resources/config.properties
-   ```
+Desde MySQL Workbench, HeidiSQL o la consola de MySQL, ejecuta los archivos en este orden:
 
-4. Configura la conexión sin compartir tus credenciales:
+1. `database/01-esquema.sql`
+2. `database/02-datos-demo.sql`
 
-   ```properties
-   db.url=jdbc:mysql://localhost:3306/vetcontrol?serverTimezone=America/Guatemala
-   db.usuario=root
-   db.contrasena=TU_CONTRASENA
-   ```
+`01-esquema.sql` crea:
 
-5. Compila el proyecto:
+- La base de datos `vetcontrol`.
+- Tablas.
+- Relaciones.
+- Índices.
+- Restricciones.
 
-   ```bash
-   mvn clean package
-   ```
+`02-datos-demo.sql` agrega información ficticia para probar el sistema:
 
-6. Ejecuta la clase principal:
+- Roles.
+- Usuarios.
+- Veterinarios.
+- Clientes.
+- Mascotas.
+- Citas.
+- Historiales clínicos.
+- Productos.
+- Movimientos de inventario.
 
-   ```text
-   com.mycompany.vetcontrol.VetControl
-   ```
+Los datos de demostración son opcionales, pero se recomienda utilizarlos para comprobar el funcionamiento de la aplicación.
 
-También puede abrirse y ejecutarse directamente desde NetBeans.
+### 3. Configurar la conexión
+
+Copia el archivo:
+
+```text
+src/main/resources/config.properties.example
+```
+
+y crea:
+
+```text
+src/main/resources/config.properties
+```
+
+Para una base de datos local utiliza una configuración similar a:
+
+```properties
+db.url=jdbc:mysql://localhost:3306/vetcontrol?serverTimezone=America/Guatemala
+db.usuario=root
+db.contrasena=TU_CONTRASENA
+```
+
+Para un servidor MySQL en la nube utiliza los datos proporcionados por el proveedor:
+
+```properties
+db.url=jdbc:mysql://HOST:PUERTO/vetcontrol?sslMode=REQUIRED&serverTimezone=America/Guatemala
+db.usuario=USUARIO
+db.contrasena=CONTRASENA
+```
+
+No agregues `config.properties` al repositorio. Este archivo está excluido mediante `.gitignore` para evitar publicar credenciales.
+
+### 4. Compilar el proyecto
+
+Desde la carpeta principal ejecuta:
+
+```bash
+mvn clean package
+```
+
+### 5. Ejecutar la aplicación
+
+Ejecuta la clase principal:
+
+```text
+com.mycompany.vetcontrol.VetControl
+```
+
+También puedes abrir el proyecto desde NetBeans y utilizar la opción **Run Project**.
 
 ## Usuarios de demostración
 
@@ -165,7 +218,14 @@ Estas cuentas son únicamente para pruebas. Las contraseñas deben cambiarse en 
 
 ## Base de datos
 
-La aplicación utiliza, entre otras, las siguientes tablas:
+VetControl utiliza MySQL 8 y proporciona scripts para reconstruir la base de datos desde cero.
+
+| Archivo | Descripción |
+| --- | --- |
+| `database/01-esquema.sql` | Crea la base, tablas, relaciones, índices y restricciones |
+| `database/02-datos-demo.sql` | Inserta información ficticia para probar todos los módulos |
+
+Las principales tablas son:
 
 - `roles`
 - `usuarios`
@@ -177,21 +237,7 @@ La aplicación utiliza, entre otras, las siguientes tablas:
 - `productos`
 - `movimientos_inventario`
 
-La base de datos puede ejecutarse localmente o alojarse en un servicio MySQL en la nube. Las credenciales de conexión nunca deben incluirse en el repositorio.
-
-## Estado del proyecto
-
-- [x] Autenticación de usuarios
-- [x] Permisos por roles
-- [x] Gestión de clientes
-- [x] Gestión de mascotas
-- [x] Gestión de citas
-- [x] Historial clínico
-- [x] Inventario
-- [x] Movimientos de inventario
-- [x] Administración de usuarios
-- [x] Resumen dinámico en Inicio
-- [ ] Publicación de la base de datos en la nube
+La base puede ejecutarse localmente o alojarse en un servicio MySQL en la nube. Las credenciales de conexión nunca deben incluirse en GitHub.
 
 ## Autor
 
