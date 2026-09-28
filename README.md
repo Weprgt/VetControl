@@ -173,7 +173,7 @@ La aplicación utiliza, entre otras, las siguientes tablas:
 - `clientes`
 - `mascotas`
 - `citas`
-- `historiales_clinicos`
+- `historial_clinico`
 - `productos`
 - `movimientos_inventario`
 
