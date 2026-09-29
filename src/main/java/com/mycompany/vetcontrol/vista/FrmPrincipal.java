@@ -22,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import com.mycompany.vetcontrol.modelo.Usuario;
 import java.sql.SQLException;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -38,6 +39,7 @@ public class FrmPrincipal extends JFrame{
     
     // Botones
     private JButton botonSeleccionado; // Mostrar botón seleccionado
+    private JButton btnCerrarSesion;
     
     // Cardview
     private CardLayout cardLayout;
@@ -91,29 +93,96 @@ public class FrmPrincipal extends JFrame{
     }
     
     private JPanel crearBarraSuperior() {
-        // Contiene Título de la pantalla y usuario
-        JPanel barraSuperior= new JPanel(
+
+        // Contiene el nombre de la aplicación, usuario y cierre de sesión.
+        JPanel barraSuperior = new JPanel(
             new BorderLayout()
         );
-    
+
         barraSuperior.setBackground(AZUL_OSCURO);
-        
-        barraSuperior.setBorder(new EmptyBorder(18, 28, 18, 28));
-        
-        // Titulo de la pantalla
-        JLabel lblNombreAplicacion= new JLabel("VetControl");
+        barraSuperior.setBorder(
+            new EmptyBorder(18, 28, 18, 28)
+        );
+
+        // Nombre de la aplicación.
+        JLabel lblNombreAplicacion =
+            new JLabel("VetControl");
+
         lblNombreAplicacion.setForeground(Color.WHITE);
-        lblNombreAplicacion.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        
-        // Usuario/Cliente/Administrador
-        JLabel lblUsuario = new JLabel(usuarioActual.getNombreCompleto()
-            + " · "  + usuarioActual.getNombreRol());
+        lblNombreAplicacion.setFont(
+            new Font("Segoe UI", Font.BOLD, 24)
+        );
+
+        /*
+         * Panel transparente que agrupa el nombre del
+         * usuario y el botón para cerrar la sesión.
+         */
+        JPanel panelUsuario = new JPanel();
+
+        panelUsuario.setLayout(
+            new BoxLayout(
+                panelUsuario,
+                BoxLayout.X_AXIS
+            )
+        );
+
+        panelUsuario.setOpaque(false);
+
+        // Nombre y rol del usuario conectado.
+        JLabel lblUsuario = new JLabel(
+            usuarioActual.getNombreCompleto()
+            + " · "
+            + usuarioActual.getNombreRol()
+        );
+
         lblUsuario.setForeground(Color.WHITE);
-        lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        
-        barraSuperior.add(lblNombreAplicacion, BorderLayout.WEST);
-        barraSuperior.add(lblUsuario, BorderLayout.EAST);
-        
+        lblUsuario.setFont(
+            new Font("Segoe UI", Font.PLAIN, 15)
+        );
+
+        // Botón para regresar al formulario de acceso.
+        btnCerrarSesion =
+            new JButton("Cerrar sesión");
+
+        btnCerrarSesion.setForeground(Color.WHITE);
+        btnCerrarSesion.setBackground(
+            new Color(217, 92, 89)
+        );
+
+        btnCerrarSesion.setFont(
+            new Font("Segoe UI", Font.BOLD, 13)
+        );
+
+        btnCerrarSesion.setFocusPainted(false);
+
+        btnCerrarSesion.putClientProperty(
+            "JButton.buttonType",
+            "borderless"
+        );
+
+        // Ejecuta el cierre de sesión al presionar el botón.
+        btnCerrarSesion.addActionListener(
+            evento -> cerrarSesion()
+        );
+
+        // Organizar los elementos del lado derecho.
+        panelUsuario.add(lblUsuario);
+        panelUsuario.add(
+            Box.createHorizontalStrut(15)
+        );
+        panelUsuario.add(btnCerrarSesion);
+
+        // Agregar elementos a la barra superior.
+        barraSuperior.add(
+            lblNombreAplicacion,
+            BorderLayout.WEST
+        );
+
+        barraSuperior.add(
+            panelUsuario,
+            BorderLayout.EAST
+        );
+
         return barraSuperior;
     }
     
@@ -392,5 +461,30 @@ public class FrmPrincipal extends JFrame{
            default ->
                pantalla.equals("INICIO");
        };
+   }
+   /**
+    * Solicita confirmación antes de cerrar la sesión actual.
+    */
+   private void cerrarSesion() {
+
+       int respuesta = JOptionPane.showConfirmDialog(
+           this,
+           "¿Deseas cerrar la sesión actual?",
+           "Cerrar sesión",
+           JOptionPane.YES_NO_OPTION,
+           JOptionPane.QUESTION_MESSAGE
+       );
+
+       if (respuesta == JOptionPane.YES_OPTION) {
+
+           /*
+            * Primero abre nuevamente el formulario de acceso.
+            * Después destruye la ventana principal.
+            */
+           FrmLogin login = new FrmLogin();
+           login.setVisible(true);
+
+           dispose();
+       }
    }
 }
